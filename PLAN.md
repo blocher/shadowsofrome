@@ -23,7 +23,16 @@ This repo will hold several browser games set in the world of Sophie de Mullenhe
   from the text descriptions above.
 - Clothing colours for Maximus and Aghiles, and Titus' eye colour, are never stated. I will choose historically
   plausible ones and list them for you to correct.
-- A full read of book one (your Kindle copy) is in progress; it feeds the story script, not this plan's structure.
+- Book one has now been read in full from your Kindle copy. Points from it that bind the script:
+  - None of the three is a Christian. Titus is a devout pagan, Maximus a sceptic who has learned respect, and Aghiles
+    believes in no gods at all, so he never swears by Jupiter.
+  - Aghiles is laconic but not placid; Maximus thinks him hot-headed. He is the group's conscience.
+  - The boys keep their adventures secret from both fathers.
+  - Blandula, the freed slave girl, now lives in Maximus' household and cannot read; Maximus reads to her.
+  - Paulus and Victor are outside Rome, and Fulgur is dead. The story will not bring them back.
+  - The one game played in book one is knucklebones on Maximus' patio, with Blandula joining in.
+- For books two to six I have only the publisher's samples (about a tenth of each). You have presumably read them;
+  the script will list every assumption it makes about them for you to check.
 
 ### The game
 
@@ -131,9 +140,12 @@ Working title: ***The Brigands' Board***. *Latrunculi* means "little brigands", 
 The story is original, sits in the gaps of the books, and puts nothing in the boys' mouths that contradicts them. The
 outline below is a proposal; the full script comes to you for review before any voice is recorded.
 
-- **Premise.** At an auction of goods seized from a condemned household, Maximus buys an old gaming box: a board, blue
-  and white glass pieces, and wax tablets of game problems. One piece is missing. The problems, once solved, leave
-  the pieces in patterns that spell out a trail. Someone else wants the box.
+- **When.** Later in A.D. 303, after the latrunculi scene in book 4, so Aghiles already knows the game. The tutorial
+  is a flashback to the boys teaching him.
+- **Premise.** An old gaming box turns up among goods cleared from the looted villa of Cornelius, the Christian
+  magistrate martyred before book one: a board, blue and white glass pieces, and wax tablets of game problems.
+  Blandula recognises it. One piece is missing. The problems, once solved, leave the pieces in patterns that spell
+  out a trail. Someone else wants the box.
 - **Why it suits the game.** Each chapter is a match between two of the boys or a set problem from the tablets. Notes
   in the box say whose rules to play by, which is how the presets enter the story one at a time.
 - **Dux** has the missing piece, and it is the *dux*.
