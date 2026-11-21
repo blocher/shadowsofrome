@@ -1,0 +1,179 @@
+{
+  "id": "maximus",
+  "canvas": [
+    1024,
+    1280
+  ],
+  "scaleHint": 0.9,
+  "hiddenBelow": 0.85,
+  "eyeL": [
+    0.601,
+    0.363
+  ],
+  "eyeR": [
+    0.663,
+    0.371
+  ],
+  "mouth": [
+    0.621,
+    0.445
+  ],
+  "headTop": [
+    0.555,
+    0.2
+  ],
+  "chin": [
+    0.603,
+    0.484
+  ],
+  "note": "eyeL, eyeR, mouth, headTop and chin are normalised [x,y] on the neutral frame; eyeL/eyeR are the left/right eye as seen in the image. talk, blink and look are neutral plus a feathered patch (pixel-identical elsewhere): draw them as overlays or hard swaps. The other expressions are full re-renders aligned by translation: crossfade them (150-250 ms).",
+  "frames": [
+    "neutral",
+    "talk",
+    "blink",
+    "thinking",
+    "pleased",
+    "rattled",
+    "triumphant",
+    "sulking",
+    "look"
+  ],
+  "registrationNote": "offsetPx = whole-frame shift that was applied to put the edit back on neutral (canvas px; 0 means the model kept the framing). headShiftPx = extra shift of the head alone that the patch follows. residual / seam = remaining RMS / mean difference (0-255) outside the changed feature. changedRect = [x,y,w,h] of the pixels that differ from neutral.",
+  "registration": {
+    "talk": {
+      "mode": "patch",
+      "offsetPx": [
+        0,
+        1
+      ],
+      "residual": 6.41,
+      "seam": 8.9,
+      "headShiftPx": [
+        0,
+        0.5
+      ],
+      "meanDiffBeforePatch": 9.61,
+      "changedRect": [
+        582,
+        517,
+        104,
+        135
+      ]
+    },
+    "blink": {
+      "mode": "patch",
+      "offsetPx": [
+        0,
+        0
+      ],
+      "residual": 4.43,
+      "seam": 4.68,
+      "headShiftPx": [
+        0,
+        0
+      ],
+      "meanDiffBeforePatch": 6.78,
+      "changedRect": [
+        589,
+        449,
+        125,
+        50
+      ]
+    },
+    "thinking": {
+      "mode": "full-frame",
+      "offsetPx": [
+        0,
+        0
+      ],
+      "residual": 6.99,
+      "meanDiffBeforePatch": 11.69,
+      "changedRect": [
+        229,
+        249,
+        568,
+        1031
+      ]
+    },
+    "pleased": {
+      "mode": "full-frame",
+      "offsetPx": [
+        0,
+        0
+      ],
+      "residual": 6.1,
+      "meanDiffBeforePatch": 10.02,
+      "changedRect": [
+        229,
+        248,
+        567,
+        1032
+      ]
+    },
+    "rattled": {
+      "mode": "full-frame",
+      "offsetPx": [
+        0,
+        1
+      ],
+      "residual": 7.89,
+      "meanDiffBeforePatch": 11.67,
+      "changedRect": [
+        229,
+        248,
+        566,
+        1032
+      ]
+    },
+    "triumphant": {
+      "mode": "full-frame",
+      "offsetPx": [
+        -1,
+        1
+      ],
+      "residual": 12,
+      "meanDiffBeforePatch": 18.15,
+      "changedRect": [
+        226,
+        248,
+        573,
+        1032
+      ]
+    },
+    "sulking": {
+      "mode": "full-frame",
+      "offsetPx": [
+        -1,
+        0
+      ],
+      "residual": 6.65,
+      "meanDiffBeforePatch": 11.04,
+      "changedRect": [
+        229,
+        249,
+        567,
+        1031
+      ]
+    },
+    "look": {
+      "mode": "patch",
+      "offsetPx": [
+        0,
+        0
+      ],
+      "residual": 5.46,
+      "seam": 5.14,
+      "headShiftPx": [
+        0.5,
+        0
+      ],
+      "meanDiffBeforePatch": 8,
+      "changedRect": [
+        584,
+        446,
+        131,
+        53
+      ]
+    }
+  }
+}

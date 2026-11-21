@@ -1,0 +1,90 @@
+{
+  "size": [
+    768,
+    768
+  ],
+  "groundY": 0.9661458333333334,
+  "registered": [
+    "sit",
+    "eat",
+    "point",
+    "steal",
+    "scared",
+    "chatter"
+  ],
+  "poses": {
+    "sit": {
+      "box": [
+        47,
+        40,
+        588,
+        702
+      ],
+      "scale": 1
+    },
+    "eat": {
+      "box": [
+        48,
+        44,
+        605,
+        698
+      ],
+      "scale": 1
+    },
+    "point": {
+      "box": [
+        49,
+        42,
+        672,
+        699
+      ],
+      "scale": 1
+    },
+    "steal": {
+      "box": [
+        47,
+        45,
+        601,
+        697
+      ],
+      "scale": 1
+    },
+    "cheer": {
+      "box": [
+        80,
+        20,
+        608,
+        722
+      ],
+      "scale": 0.945
+    },
+    "scared": {
+      "box": [
+        47,
+        41,
+        588,
+        701
+      ],
+      "scale": 1
+    },
+    "chatter": {
+      "box": [
+        48,
+        44,
+        617,
+        698
+      ],
+      "scale": 1
+    },
+    "sleep": {
+      "box": [
+        20,
+        275,
+        727,
+        467
+      ],
+      "scale": 1
+    }
+  },
+  "note": "box = [x,y,w,h] of the opaque pixels. groundY is the line the feet sit on (normalised). The poses in `registered` share one transform: body and tail overlap exactly, so they can be swapped or crossfaded in place. cheer and sleep stand on the same ground line, centred."
+}

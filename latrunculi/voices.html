@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice auditions — Latrunculi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root { --ink: #f4ead7; --dim: #c9b99a; --gold: #e6b95c; --gold2: #f7dc9a; --line: rgba(230, 185, 92, 0.34); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #120b06; color: var(--ink); font-family: 'EB Garamond', Georgia, serif; font-size: 18px; line-height: 1.4; }
+    main { max-width: 1040px; margin: 0 auto; padding: 5vh 5vw 8vh; }
+    h1 { font-family: 'Cinzel', serif; font-weight: 900; font-size: clamp(1.8rem, 4.6vw, 3rem); margin: 0 0 0.2em; color: var(--gold2); letter-spacing: 0.05em; }
+    .lede { color: var(--dim); font-style: italic; max-width: 64ch; margin: 0 0 2rem; }
+    section { border: 1px solid var(--line); border-radius: 14px; background: rgba(38, 23, 13, 0.7); padding: 1.1rem 1.3rem 1.2rem; margin-bottom: 1.2rem; }
+    h2 { font-family: 'Cinzel', serif; letter-spacing: 0.1em; font-size: 1.25rem; margin: 0 0 0.2em; color: var(--gold2); }
+    .desc { color: var(--dim); font-style: italic; margin: 0 0 0.7rem; }
+    .lines { margin: 0 0 0.9rem; padding-left: 1.2em; color: var(--ink); }
+    .cand { display: grid; grid-template-columns: minmax(200px, 300px) 1fr; gap: 0.6rem 1rem; align-items: center; padding: 0.6rem 0; border-top: 1px solid rgba(230, 185, 92, 0.18); }
+    .cand b { font-family: 'Cinzel', serif; letter-spacing: 0.06em; font-size: 0.92rem; }
+    .cand .tag { display: inline-block; margin-left: 0.5em; font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.14em; padding: 0.15em 0.6em; border-radius: 99px; background: linear-gradient(180deg, #f3cf7c, #b9832c); color: #2a1706; text-transform: uppercase; vertical-align: middle; }
+    .cand small { display: block; color: var(--dim); }
+    .clips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    audio { height: 36px; width: min(100%, 220px); }
+    a { color: var(--gold); }
+    @media (max-width: 720px) { .cand { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Voice auditions</h1>
+    <p class="lede">Three candidate voices for each speaker, each reading the same real lines from the game. The one marked “in use” is my proposal. Tell me the names you prefer and I will record the full script with them. <a href="./">Back to the game</a></p>
+    <div id="roles">Loading…</div>
+  </main>
+  <script type="module">
+    const base = new URL('../voice/audition/', document.baseURI).href;
+    const roles = document.getElementById('roles');
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const about = {
+      narrator: 'Adult storyteller, warm and unhurried, with a dry twinkle.', maximus: 'Fifteen. Light, quick, crisp and well-bred; dry and sarcastic.',
+      titus: 'Fourteen. Bright and theatrical, talks fast; bragging one moment, panicking the next.', aghiles: 'About seventeen. Deep, calm, few words, warmth under the quiet.',
+      blandula: 'About seventeen. Soft, low, gentle and steady.', sabinus: 'About fifty. Smooth, soft, always courteous; the menace is in the politeness.',
+    };
+    try {
+      const data = await fetch(base + 'audition.json', { cache: 'no-cache' }).then((r) => r.json());
+      roles.innerHTML = Object.entries(data).map(([role, r]) => `<section><h2>${esc(role[0].toUpperCase() + role.slice(1))}</h2><p class="desc">${esc(about[role] || '')}</p>
+        <ol class="lines">${r.lines.map((l) => `<li>${esc(l.text)}</li>`).join('')}</ol>
+        ${Object.entries(r.candidates).map(([key, c]) => `<div class="cand"><div><b>${esc(c.label.split(':')[0])}</b>${key === r.chosen ? '<span class="tag">in use</span>' : ''}<small>${esc(c.label.split(':').slice(1).join(':').trim())}</small></div>
+          <div class="clips">${c.files.map((f, i) => `<audio controls preload="none" src="${base}${f}" title="Line ${i + 1}"></audio>`).join('')}</div></div>`).join('')}</section>`).join('');
+    } catch (e) { roles.textContent = 'No audition clips have been recorded yet.'; }
+  </script>
+</body>
+</html>

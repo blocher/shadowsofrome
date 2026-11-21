@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         hub: resolve(__dirname, 'index.html'),
         latrunculi: resolve(__dirname, 'latrunculi/index.html'),
+        voices: resolve(__dirname, 'latrunculi/voices.html'),
       },
     },
   },

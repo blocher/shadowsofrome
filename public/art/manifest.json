@@ -1,0 +1,505 @@
+{
+  "generated": "2026-11-21",
+  "base": "public/art/",
+  "totalBytes": 24069389,
+  "files": [
+    {
+      "path": "backgrounds/atrium.webp",
+      "bytes": 316384,
+      "width": 2560,
+      "height": 1440,
+      "alpha": false
+    },
+    {
+      "path": "backgrounds/atrium_env.webp",
+      "bytes": 11356,
+      "width": 1024,
+      "height": 512,
+      "alpha": false
+    },
+    {
+      "path": "backgrounds/colosseum.webp",
+      "bytes": 728754,
+      "width": 2560,
+      "height": 1440,
+      "alpha": false
+    },
+    {
+      "path": "backgrounds/colosseum_env.webp",
+      "bytes": 10642,
+      "width": 1024,
+      "height": 512,
+      "alpha": false
+    },
+    {
+      "path": "backgrounds/cubiculum.webp",
+      "bytes": 255624,
+      "width": 2560,
+      "height": 1440,
+      "alpha": false
+    },
+    {
+      "path": "backgrounds/cubiculum_env.webp",
+      "bytes": 8380,
+      "width": 1024,
+      "height": 512,
+      "alpha": false
+    },
+    {
+      "path": "characters/aghiles/blink.webp",
+      "bytes": 187434,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/look.webp",
+      "bytes": 187524,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/meta.json",
+      "bytes": 3023
+    },
+    {
+      "path": "characters/aghiles/neutral.webp",
+      "bytes": 187896,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/pleased.webp",
+      "bytes": 180680,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/rattled.webp",
+      "bytes": 180478,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/sulking.webp",
+      "bytes": 182138,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/talk.webp",
+      "bytes": 187524,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/thinking.webp",
+      "bytes": 180340,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/aghiles/triumphant.webp",
+      "bytes": 182688,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/blink.webp",
+      "bytes": 81158,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/look.webp",
+      "bytes": 81268,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/meta.json",
+      "bytes": 3018
+    },
+    {
+      "path": "characters/maximus/neutral.webp",
+      "bytes": 81276,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/pleased.webp",
+      "bytes": 77218,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/rattled.webp",
+      "bytes": 77042,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/sulking.webp",
+      "bytes": 73096,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/talk.webp",
+      "bytes": 81782,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/thinking.webp",
+      "bytes": 76812,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/maximus/triumphant.webp",
+      "bytes": 73998,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/blink.webp",
+      "bytes": 163448,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/look.webp",
+      "bytes": 163738,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/meta.json",
+      "bytes": 3027
+    },
+    {
+      "path": "characters/titus/neutral.webp",
+      "bytes": 163650,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/pleased.webp",
+      "bytes": 156090,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/rattled.webp",
+      "bytes": 152954,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/sulking.webp",
+      "bytes": 156782,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/talk.webp",
+      "bytes": 163438,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/thinking.webp",
+      "bytes": 156214,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "characters/titus/triumphant.webp",
+      "bytes": 154076,
+      "width": 1024,
+      "height": 1280,
+      "alpha": true
+    },
+    {
+      "path": "contact_sheet.jpg",
+      "bytes": 793591,
+      "width": 2400,
+      "height": 3500,
+      "alpha": false
+    },
+    {
+      "path": "dux/chatter.webp",
+      "bytes": 116676,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "dux/cheer.webp",
+      "bytes": 88574,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "dux/eat.webp",
+      "bytes": 114710,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "dux/meta.json",
+      "bytes": 1368
+    },
+    {
+      "path": "dux/point.webp",
+      "bytes": 121272,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "dux/scared.webp",
+      "bytes": 117796,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "dux/sit.webp",
+      "bytes": 119140,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "dux/sleep.webp",
+      "bytes": 137158,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "dux/steal.webp",
+      "bytes": 115410,
+      "width": 768,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "path": "env/studio.hdr",
+      "bytes": 1631135,
+      "width": 1024,
+      "height": 512
+    },
+    {
+      "path": "review_edges.jpg",
+      "bytes": 999913,
+      "width": 3072,
+      "height": 2560,
+      "alpha": false
+    },
+    {
+      "path": "story/ch1.webp",
+      "bytes": 132962,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/ch2.webp",
+      "bytes": 151334,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/ch3.webp",
+      "bytes": 104128,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/ch4.webp",
+      "bytes": 246288,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/ch5.webp",
+      "bytes": 207076,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/ch6.webp",
+      "bytes": 105364,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/ch7.webp",
+      "bytes": 147816,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/epilogue.webp",
+      "bytes": 207666,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "story/prologue.webp",
+      "bytes": 189898,
+      "width": 1920,
+      "height": 1080,
+      "alpha": false
+    },
+    {
+      "path": "textures/marble/arm.jpg",
+      "bytes": 214100,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/marble/diffuse.jpg",
+      "bytes": 1269188,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/marble/normal_gl.jpg",
+      "bytes": 409581,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/marble/slab.webp",
+      "bytes": 959186,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/marble/slab_arm.jpg",
+      "bytes": 572253,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/marble/slab_normal_gl.jpg",
+      "bytes": 1545167,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/wood/arm.jpg",
+      "bytes": 2604559,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/wood/diffuse.jpg",
+      "bytes": 2894186,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "textures/wood/normal_gl.jpg",
+      "bytes": 1603278,
+      "width": 2048,
+      "height": 2048,
+      "alpha": false
+    },
+    {
+      "path": "ui/card_aghiles.webp",
+      "bytes": 124968,
+      "width": 768,
+      "height": 1024,
+      "alpha": false
+    },
+    {
+      "path": "ui/card_dux.webp",
+      "bytes": 101148,
+      "width": 768,
+      "height": 1024,
+      "alpha": false
+    },
+    {
+      "path": "ui/card_maximus.webp",
+      "bytes": 71908,
+      "width": 768,
+      "height": 1024,
+      "alpha": false
+    },
+    {
+      "path": "ui/card_titus.webp",
+      "bytes": 128824,
+      "width": 768,
+      "height": 1024,
+      "alpha": false
+    },
+    {
+      "path": "ui/hero.webp",
+      "bytes": 261138,
+      "width": 2560,
+      "height": 1440,
+      "alpha": false
+    },
+    {
+      "path": "ui/logo_mark.webp",
+      "bytes": 29412,
+      "width": 512,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "path": "ui/parchment.webp",
+      "bytes": 300268,
+      "width": 1024,
+      "height": 1024,
+      "alpha": false
+    }
+  ]
+}

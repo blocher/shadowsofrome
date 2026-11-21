@@ -1,0 +1,253 @@
+{
+ "narrator": {
+  "chosen": "george",
+  "lines": [
+   {
+    "id": "pro_in_01",
+    "text": "Rome, late in the year three hundred and three. In a senator's house on a dead-end street, one lamp was still burning."
+   },
+   {
+    "id": "pro_in_02",
+    "text": "It lit a table, a game board, and three friends who had no intention of going to sleep."
+   }
+  ],
+  "candidates": {
+   "george": {
+    "label": "George: warm British storyteller",
+    "files": [
+     "narrator__george__pro_in_01.mp3",
+     "narrator__george__pro_in_02.mp3"
+    ]
+   },
+   "christopher": {
+    "label": "Christopher: smooth, calm, very English",
+    "files": [
+     "narrator__christopher__pro_in_01.mp3",
+     "narrator__christopher__pro_in_02.mp3"
+    ]
+   },
+   "bill": {
+    "label": "Bill: older, wise, crisp",
+    "files": [
+     "narrator__bill__pro_in_01.mp3",
+     "narrator__bill__pro_in_02.mp3"
+    ]
+   }
+  }
+ },
+ "maximus": {
+  "chosen": "dylan",
+  "lines": [
+   {
+    "id": "bn_max_capture_1",
+    "text": "Between two of mine. Off he goes."
+   },
+   {
+    "id": "tut_move_s1_p1",
+    "text": "In straight lines. Forward, back, left or right, as far as the way is clear."
+   },
+   {
+    "id": "bn_max_win_1",
+    "text": "And that is that. Brains over everything."
+   }
+  ],
+  "candidates": {
+   "dylan": {
+    "label": "Dylan: young, calm, precise",
+    "files": [
+     "maximus__dylan__bn_max_capture_1.mp3",
+     "maximus__dylan__tut_move_s1_p1.mp3",
+     "maximus__dylan__bn_max_win_1.mp3"
+    ]
+   },
+   "liam": {
+    "label": "Liam: young, quick, confident",
+    "files": [
+     "maximus__liam__bn_max_capture_1.mp3",
+     "maximus__liam__tut_move_s1_p1.mp3",
+     "maximus__liam__bn_max_win_1.mp3"
+    ]
+   },
+   "anthony": {
+    "label": "Anthony: young, casual storyteller",
+    "files": [
+     "maximus__anthony__bn_max_capture_1.mp3",
+     "maximus__anthony__tut_move_s1_p1.mp3",
+     "maximus__anthony__bn_max_win_1.mp3"
+    ]
+   }
+  }
+ },
+ "titus": {
+  "chosen": "hale",
+  "lines": [
+   {
+    "id": "pro_in_03",
+    "text": "A rematch, Aghiles. I got up right foot first, I have not sneezed all day, and my amulet is warm. The signs could not be better."
+   },
+   {
+    "id": "bn_tit_captured_1",
+    "text": "No! Not him! He was my favourite!"
+   },
+   {
+    "id": "bn_tit_win_1",
+    "text": "Victory! Salute me! Lower. Lower. Perfect."
+   }
+  ],
+  "candidates": {
+   "hale": {
+    "label": "Hale: young, expressive, upbeat",
+    "files": [
+     "titus__hale__pro_in_03.mp3",
+     "titus__hale__bn_tit_captured_1.mp3",
+     "titus__hale__bn_tit_win_1.mp3"
+    ]
+   },
+   "charlie": {
+    "label": "Charlie: young, energetic, Australian",
+    "files": [
+     "titus__charlie__pro_in_03.mp3",
+     "titus__charlie__bn_tit_captured_1.mp3",
+     "titus__charlie__bn_tit_win_1.mp3"
+    ]
+   },
+   "will": {
+    "label": "Will: young, sunny, relaxed",
+    "files": [
+     "titus__will__pro_in_03.mp3",
+     "titus__will__bn_tit_captured_1.mp3",
+     "titus__will__bn_tit_win_1.mp3"
+    ]
+   }
+  }
+ },
+ "aghiles": {
+  "chosen": "edwin",
+  "lines": [
+   {
+    "id": "bn_agh_capture_2",
+    "text": "He was alone."
+   },
+   {
+    "id": "bn_agh_win_1",
+    "text": "Won."
+   },
+   {
+    "id": "bn_agh_idle_1",
+    "text": "In Numidia we hunted at dawn. It was quiet, like this."
+   }
+  ],
+  "candidates": {
+   "edwin": {
+    "label": "Edwin: calm, steady, deep",
+    "files": [
+     "aghiles__edwin__bn_agh_capture_2.mp3",
+     "aghiles__edwin__bn_agh_win_1.mp3",
+     "aghiles__edwin__bn_agh_idle_1.mp3"
+    ]
+   },
+   "harry": {
+    "label": "Harry: young, rough-edged",
+    "files": [
+     "aghiles__harry__bn_agh_capture_2.mp3",
+     "aghiles__harry__bn_agh_win_1.mp3",
+     "aghiles__harry__bn_agh_idle_1.mp3"
+    ]
+   },
+   "brian": {
+    "label": "Brian: deep, resonant, comforting",
+    "files": [
+     "aghiles__brian__bn_agh_capture_2.mp3",
+     "aghiles__brian__bn_agh_win_1.mp3",
+     "aghiles__brian__bn_agh_idle_1.mp3"
+    ]
+   }
+  }
+ },
+ "blandula": {
+  "chosen": "arabella",
+  "lines": [
+   {
+    "id": "pro_cl_02",
+    "text": "Where did you get that box?"
+   },
+   {
+    "id": "pro_cl_04",
+    "text": "It stood beside my master's chair. I dusted it more mornings than I can count."
+   },
+   {
+    "id": "pro_cl_09",
+    "text": "He used that word, in the last days. He said: my treasure is safe. The board remembers."
+   }
+  ],
+  "candidates": {
+   "arabella": {
+    "label": "Arabella: young, gentle",
+    "files": [
+     "blandula__arabella__pro_cl_02.mp3",
+     "blandula__arabella__pro_cl_04.mp3",
+     "blandula__arabella__pro_cl_09.mp3"
+    ]
+   },
+   "amelia": {
+    "label": "Amelia: young, British, bright",
+    "files": [
+     "blandula__amelia__pro_cl_02.mp3",
+     "blandula__amelia__pro_cl_04.mp3",
+     "blandula__amelia__pro_cl_09.mp3"
+    ]
+   },
+   "sarah": {
+    "label": "Sarah: young, reassuring",
+    "files": [
+     "blandula__sarah__pro_cl_02.mp3",
+     "blandula__sarah__pro_cl_04.mp3",
+     "blandula__sarah__pro_cl_09.mp3"
+    ]
+   }
+  }
+ },
+ "sabinus": {
+  "chosen": "eric",
+  "lines": [
+   {
+    "id": "ch2_cl_02",
+    "text": "The animal dealer's son, with the monkey. You are easy to find, young man. My name is Sabinus. I buy and sell the goods of the condemned."
+   },
+   {
+    "id": "ch2_cl_03",
+    "text": "Yesterday my boy sold you a gaming box for four coins. A mistake. It has a value of sentiment. I will give you forty for it."
+   },
+   {
+    "id": "ch2_cl_06",
+    "text": "And you must be the senator's son. I should hate to trouble either of your fathers over a toy. Think about my forty. I shall ask again."
+   }
+  ],
+  "candidates": {
+   "eric": {
+    "label": "Eric: smooth, trustworthy",
+    "files": [
+     "sabinus__eric__ch2_cl_02.mp3",
+     "sabinus__eric__ch2_cl_03.mp3",
+     "sabinus__eric__ch2_cl_06.mp3"
+    ]
+   },
+   "dominic": {
+    "label": "Dominic: British, dark, intense",
+    "files": [
+     "sabinus__dominic__ch2_cl_02.mp3",
+     "sabinus__dominic__ch2_cl_03.mp3",
+     "sabinus__dominic__ch2_cl_06.mp3"
+    ]
+   },
+   "daniel": {
+    "label": "Daniel: formal, steady, British",
+    "files": [
+     "sabinus__daniel__ch2_cl_02.mp3",
+     "sabinus__daniel__ch2_cl_03.mp3",
+     "sabinus__daniel__ch2_cl_06.mp3"
+    ]
+   }
+  }
+ }
+}
