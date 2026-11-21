@@ -83,6 +83,8 @@ export class Stage {
     this._bindCameraInput();
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 250));
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', () => this.resize());
     r.setAnimationLoop(() => this._frame());
   }
 
@@ -243,10 +245,11 @@ export class Stage {
 
   /** Screen rectangle (in NDC) that the board must fit inside; the rest is for the characters and the interface. */
   boardRect() {
+    if (this.rect) return this.rect; // a panel (the review) may claim part of the screen
     const a = this.aspect;
-    if (a >= 1.45) return { fx: 0.5, top: 0.7, bottom: -0.74 };
+    if (a >= 1.45) return this.height < 520 ? { fx: 0.46, top: 0.72, bottom: -0.66 } : { fx: 0.5, top: 0.7, bottom: -0.74 };
     if (a >= 1.0) return { fx: 0.66, top: 0.5, bottom: -0.72 };
-    return { fx: 0.95, top: 0.34, bottom: -0.56 };
+    return { fx: 0.92, top: 0.3, bottom: -0.76 }; // upright phone: names and faces above, controls below
   }
 
   fitCamera(snap = false) {

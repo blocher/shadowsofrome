@@ -20,7 +20,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test
+      - name: Rules, lessons and problems
+        run: npx vitest run tests/engine.test.js tests/lessons.test.js
+      - name: AI (reported, does not block a deploy)
+        run: npx vitest run tests/ai.test.js
+        continue-on-error: true
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

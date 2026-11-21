@@ -9,9 +9,13 @@
 //                          noise    standard deviation (in men) of the noise added to each candidate's score
 //                          vision   chance, per own piece, of noticing that the opponent's reply can take it
 //                          weights  multipliers applied to the evaluation weights (what the level does not "see")
+//                          shallow  chance per move of thinking one ply less than `depth` (Centurio)
+//                          top, temp  how many candidates a lapse chooses among, and how evenly (in men)
+//                          placeWidth  candidate squares kept per node in the placement phase
 //   PERSONALITIES     -> { maximus, titus, aghiles }: { id, name, style, mul, add, low, rattle, endgame, ... }
 //   resolveSettings(opts, state) -> the effective search settings for chooseMove:
-//                        { level, depth, timeMs, noise, blunder, vision, top, temp, weights, prune, ttBits, placeWidth }
+//                        { level, personality, depth, timeMs, noise, blunder, vision, shallow, top, temp, weights,
+//                          prune, ttBits, placeWidth }
 //                        opts = { level: 1..5, personality: 'maximus' | 'titus' | 'aghiles' | null, rattled: 0..1, timeMs? }
 import { DEFAULT_WEIGHTS, mixWeights } from './evaluate.js';
 
@@ -33,14 +37,14 @@ export const LEVELS = [
   {
     id: 3, name: 'Centurio', latin: 'Centurio', english: 'Centurion',
     blurb: 'A solid club player. Plans two or three moves ahead and seldom leaves a piece hanging.',
-    depth: 3, timeMs: 500, blunder: 0.05, noise: 0.12, vision: 1, shallow: 0.3,
+    depth: 3, timeMs: 400, blunder: 0.05, noise: 0.12, vision: 1, shallow: 0.7,
     top: 3, temp: 0.6, placeTime: 1, ttBits: 16, prune: true, placeWidth: 10,
-    weights: null,
+    weights: { forked: 0.3 },
   },
   {
     id: 4, name: 'Legatus', latin: 'Legatus', english: 'Legate',
     blurb: 'A legion commander. Strong and patient; rarely makes a mistake.',
-    depth: 4, timeMs: 700, blunder: 0.01, noise: 0.06, vision: 1,
+    depth: 4, timeMs: 700, blunder: 0.01, noise: 0.06, vision: 1, shallow: 0.7,
     top: 2, temp: 0.4, placeTime: 0.6, ttBits: 18, prune: true, placeWidth: 12,
     weights: null,
   },
@@ -66,7 +70,7 @@ export const PERSONALITIES = {
   titus: {
     id: 'titus', name: 'Titus',
     style: 'Experienced and cautious: keeps his pieces paired, avoids even trades, and plays worse when rattled.',
-    mul: { pair: 1.5, block: 1.5, exposed: 1.2, isolated: 1.2, sandwich: 1.3, threat: 1.2, forked: 1.15, corner: 1.3 },
+    mul: { pair: 1.3, block: 1.3, exposed: 1.3, isolated: 1.3, sandwich: 1.3, threat: 1.2, forked: 1.15, advance: 0.9, corner: 1.3 },
     add: { keepPieces: 0.02 },
     low: null,
     // `rattled` (0..1, set by the game after he loses pieces) is multiplied by these per-level amounts.

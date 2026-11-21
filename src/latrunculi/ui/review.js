@@ -25,7 +25,13 @@ export class ReviewPanel {
   async open() {
     const app = this.app;
     app.ui.showHud(false);
-    if (app.stage.aspect >= 1.2) { app.stage.shiftX = -0.2; app.stage.fitCamera(); if (app.actors[1]) app.actors[1].mesh.visible = false; }
+    if (app.stage.aspect >= 1.2) { app.stage.shiftX = -0.2; if (app.actors[1]) app.actors[1].mesh.visible = false; } else {
+      // upright phone: the board takes the top of the screen, the notes the bottom
+      app.stage.rect = { fx: 0.94, top: 0.9, bottom: 0.0 };
+      for (const a of app.actors) if (a) a.mesh.visible = false;
+      if (app.dux) { app.dux.mesh.visible = false; app.dux.shadow.visible = false; }
+    }
+    app.stage.fitCamera();
     const p = this.panel = el(`<div class="review panel">
       <h2>The game, move by move <button class="btn ghost small" data-a="close">Close</button></h2>
       <div class="progress"><i></i></div>
@@ -34,7 +40,7 @@ export class ReviewPanel {
       <div class="turns" data-f="turns"><i>Studying the game…</i></div>
       <div class="moves" data-f="moves"></div>
       <div class="note" data-f="note">Step through the game with the arrows, or click the graph.</div>
-      <div class="stepper"><button class="btn small" data-a="first">⏮</button><button class="btn small" data-a="prev">◀ Back</button><button class="btn small" data-a="next">Forward ▶</button><button class="btn small" data-a="last">⏭</button><button class="btn small primary" data-a="playon">Play on from here</button></div>
+      <div class="stepper"><button class="btn small" data-a="first">⏮</button><button class="btn small" data-a="prev">◀ Back</button><button class="btn small" data-a="next">Forward ▶</button><button class="btn small" data-a="last">⏭</button><button class="btn small" data-a="copy">Copy the moves</button><button class="btn small primary" data-a="playon">Play on from here</button></div>
     </div>`);
     app.ui.root.append(p);
     this.f = {}; for (const n of p.querySelectorAll('[data-f]')) this.f[n.dataset.f] = n;
@@ -46,6 +52,7 @@ export class ReviewPanel {
       if (a === 'close') this.close();
       else if (a === 'first') this.go(0); else if (a === 'prev') this.go(this.cur - 1); else if (a === 'next') this.go(this.cur + 1); else if (a === 'last') this.go(this.positions.length - 1);
       else if (a === 'playon') this.playOn();
+      else if (a === 'copy') this.copyMoves();
     });
     this.canvas.addEventListener('click', (e) => { const r = this.canvas.getBoundingClientRect(); this.go(Math.round(((e.clientX - r.left) / r.width) * (this.positions.length - 1))); });
     this.keys = (e) => { if (e.key === 'ArrowLeft') this.go(this.cur - 1); else if (e.key === 'ArrowRight') this.go(this.cur + 1); };
@@ -66,7 +73,9 @@ export class ReviewPanel {
     window.removeEventListener('keydown', this.keys);
     this.app.ai.cancel();
     this.panel.remove();
-    this.app.stage.shiftX = 0; this.app.stage.fitCamera(); if (this.app.actors[1] && this.app.actors[1].ready) this.app.actors[1].mesh.visible = true;
+    this.app.stage.shiftX = 0; this.app.stage.rect = null; this.app.stage.fitCamera();
+    for (const a of this.app.actors) if (a && a.ready) a.mesh.visible = true;
+    if (this.app.dux && this.app.dux.ready) this.app.dux.mesh.visible = true;
     this.app.board.clearMarks();
     if (!silent && this.onClose) this.onClose();
   }
@@ -145,6 +154,13 @@ export class ReviewPanel {
     if (k === this.positions.length - 1 && state.over) note += state.over.winner ? ` ${this.name(state.over.winner > 0 ? 0 : 1)} won.` : ' A draw.';
     this.f.note.textContent = note;
     this.drawGraph();
+  }
+
+  /** Put the move list on the clipboard as plain text. */
+  async copyMoves() {
+    const head = `${this.name(0)} against ${this.name(1)}, ${this.rules.name || 'house'} rules (${this.rules.cols}x${this.rules.rows})`;
+    const body = this.texts.map((t, k) => `${k + 1}. ${this.name(this.by[k])}: ${t}`).join('\n');
+    try { await navigator.clipboard.writeText(`${head}\n${body}\n`); this.app.ui.toast('The move list is on your clipboard.', 2500); } catch (e) { this.app.ui.toast('Your browser would not allow copying.', 2500); }
   }
 
   /** Leave the review and continue from the position on screen: you take the side to move, the AI the other. */

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <link rel="icon" type="image/webp" href="./art/ui/logo_mark.webp">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>In the Shadows of Rome: Games</title>
   <meta name="description" content="Unofficial fan games set in the Rome of Maximus, Titus, Aghiles and Dux. First: Latrunculi, the game of little brigands.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,7 @@
     html, body { margin: 0; min-height: 100%; background: #0b0705; color: var(--ink); font-family: 'EB Garamond', Georgia, serif; font-size: 19px; }
     .hero { position: fixed; inset: 0; background: url('./art/ui/hero.webp') center 30% / cover no-repeat; }
     .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 4, 2, 0.35), rgba(8, 4, 2, 0.94) 72%); }
-    main { position: relative; max-width: 1060px; margin: 0 auto; padding: 9vh 5vw 6vh; }
+    main { position: relative; max-width: 1060px; margin: 0 auto; padding: max(9vh, env(safe-area-inset-top)) max(5vw, env(safe-area-inset-right)) max(6vh, env(safe-area-inset-bottom)) max(5vw, env(safe-area-inset-left)); }
     .kicker { font-family: 'Cinzel', serif; letter-spacing: 0.34em; font-size: 0.8rem; color: var(--gold); text-transform: uppercase; }
     h1 { font-family: 'Cinzel', serif; font-weight: 900; font-size: clamp(2.4rem, 6.4vw, 4.8rem); line-height: 1; margin: 0.15em 0 0.2em; background: linear-gradient(180deg, #fff1c8, #e6b95c 55%, #9c6a22); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.7)); }
     p.lede { font-size: 1.3rem; font-style: italic; color: var(--dim); max-width: 46ch; margin: 0 0 2.2rem; }

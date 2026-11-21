@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <link rel="icon" type="image/webp" href="../art/ui/logo_mark.webp">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Voice auditions — Latrunculi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +12,8 @@
     :root { --ink: #f4ead7; --dim: #c9b99a; --gold: #e6b95c; --gold2: #f7dc9a; --line: rgba(230, 185, 92, 0.34); }
     * { box-sizing: border-box; }
     body { margin: 0; background: #120b06; color: var(--ink); font-family: 'EB Garamond', Georgia, serif; font-size: 18px; line-height: 1.4; }
-    main { max-width: 1040px; margin: 0 auto; padding: 5vh 5vw 8vh; }
+    main { max-width: 1040px; margin: 0 auto; padding: max(5vh, env(safe-area-inset-top)) max(5vw, env(safe-area-inset-right)) max(8vh, env(safe-area-inset-bottom)) max(5vw, env(safe-area-inset-left)); }
+    html { overflow-x: hidden; } audio { max-width: 100%; }
     h1 { font-family: 'Cinzel', serif; font-weight: 900; font-size: clamp(1.8rem, 4.6vw, 3rem); margin: 0 0 0.2em; color: var(--gold2); letter-spacing: 0.05em; }
     .lede { color: var(--dim); font-style: italic; max-width: 64ch; margin: 0 0 2rem; }
     section { border: 1px solid var(--line); border-radius: 14px; background: rgba(38, 23, 13, 0.7); padding: 1.1rem 1.3rem 1.2rem; margin-bottom: 1.2rem; }

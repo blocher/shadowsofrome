@@ -29,10 +29,13 @@ export class Ludus {
   /** Speak a list of lines; a click or the space bar cuts the current line short. */
   async speak(lines, epoch) {
     const app = this.app;
+    const tap = () => app.voice.stop(); // a tap anywhere moves the speech on
+    window.addEventListener('pointerup', tap);
     for (const line of lines || []) {
-      if (app.epoch !== epoch) return false;
+      if (app.epoch !== epoch) break;
       await app.director.say(line.who, line, { hold: 0.25 });
     }
+    window.removeEventListener('pointerup', tap);
     return app.epoch === epoch;
   }
 
@@ -52,7 +55,7 @@ export class Ludus {
     const keys = (e) => { if (e.key === ' ' || e.key === 'Enter') app.voice.stop(); };
     window.addEventListener('keydown', keys);
     const finish = () => window.removeEventListener('keydown', keys);
-    app.ui.hud.setPrompt('Press space to move a speech on');
+    app.ui.hud.setPrompt(matchMedia('(pointer: coarse)').matches ? 'Tap the table to move a speech on' : 'Press space to move a speech on');
     if (!(await this.speak(T.intro, epoch))) return finish();
     for (let k = 0; k < lesson.steps.length; k++) {
       const step = lesson.steps[k], words = (T.steps && T.steps[k]) || {};

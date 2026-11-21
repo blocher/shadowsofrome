@@ -108,7 +108,7 @@ export class Actor {
     if (!this.ready) return;
     const a = this.stage.aspect, sc = this.info.scale, m = this.marks;
     let head, chinY, inset;
-    if (a >= 1.45) { head = 0.37; chinY = 0.2; inset = 0.44; } else if (a >= 1.0) { head = 0.27; chinY = 0.44; inset = 0.34; } else { head = 0.16; chinY = 0.5; inset = 0.25; }
+    if (a >= 1.45) { head = 0.37; chinY = 0.2; inset = 0.44; } else if (a >= 1.0) { head = 0.27; chinY = 0.44; inset = 0.34; } else { head = 0.2; chinY = 0.47; inset = 0.27; }
     const headFrac = Math.max(0.12, m.chin[1] - m.headTop[1]);
     const h = (head * sc) / headFrac, w = h * this.imgAspect;
     const faceX = this.side * (a - inset), fx = (m.chin[0] + m.headTop[0]) / 2 - 0.5;

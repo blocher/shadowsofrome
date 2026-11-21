@@ -42,7 +42,7 @@ export class StoryMode {
     const app = this.app;
     if (!lines || !lines.length) return true;
     let skipAll = false;
-    const layer = app.cutLayer = el('<div class="cut"><button class="btn ghost small skip">Skip scene</button><div class="next">click or press space to go on</div></div>');
+    const layer = app.cutLayer = el(`<div class="cut"><button class="btn ghost small skip">Skip scene</button><div class="next">${matchMedia('(pointer: coarse)').matches ? 'tap to go on' : 'click or press space to go on'}</div></div>`);
     layer.addEventListener('click', (e) => { if (e.target.closest('.skip')) skipAll = true; app.voice.stop(); });
     const keys = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); app.voice.stop(); } };
     window.addEventListener('keydown', keys);

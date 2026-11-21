@@ -10,8 +10,13 @@
 //                rattled?: 0..1, history?: number[], depth?: cap override, maxNodes?: node budget,
 //                weights?: partial evaluation-weight overrides (tuning) }
 //       `score` is in men from the point of view of the side to move (a forced win / loss is ±(1000 - plies)).
-//       `move` is null only when there is no legal move. Deterministic for a given `seed` as long as the search is
-//       stopped by depth or by `maxNodes` rather than by the clock (levels 1-3 always are in practice).
+//       `move` is null only when there is no legal move; `lapse` says a deliberate slip was played.
+//       Deterministic for a given `seed` (without one, a seed is drawn from Math.random so games differ), bit for
+//       bit on every machine, as long as the search is stopped by depth or by `maxNodes` rather than by the clock:
+//       levels 1-4 stop at their depth cap long before their time budget; for level 5 pass `maxNodes` (with a
+//       large `timeMs`) when reproducibility matters. Weak levels are weak in human ways: shallow depth, noise on
+//       each candidate's score, a per-move chance of a lapse among the top few candidates, and (levels 1-2) a
+//       chance per square of not noticing that the opponent's reply can capture there. Never an illegal move.
 //       `history` is the list of position keys of the game so far (defaults to state.history); a third occurrence
 //       of a position is scored as the engine scores it: by piece count.
 //   analyse(state, opts)    -> { score, depth, nodes, ms, lines: [{ move, score, pv }] }

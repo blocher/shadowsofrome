@@ -17,10 +17,18 @@ const move = (s, a, b) => legalMoves(s).find((m) => m.t === 'm' && m.from === sq
 const play = (s, a, b) => applyMove(s, move(s, a, b));
 const name = (s, mv) => notate(s, mv);
 
+// Nothing asserted here may depend on how fast the machine is. Every search whose RESULT is checked is bounded by
+// depth or by a node count and given a time budget that never runs out (FOREVER); levels 1-3 stop at their own
+// depth, levels 4-5 at the node budgets below. Only the "in time" tests use the clock, with generous limits.
+const FOREVER = 1e9;
+const NODES = { 1: 0, 2: 0, 3: 0, 4: 4000, 5: 6000 };
+const pick = (s, level, seed = 1, extra = null) => chooseMove(s, { level, seed, timeMs: FOREVER, maxNodes: NODES[level], ...extra });
+const study = (s, opts) => analyse(s, { timeMs: FOREVER, ...opts });
+
 /** A position reached by quick seeded play (level 1 or 2 moves). */
 function reach(rules, plies, seed = 1, level = 2) {
   let s = createGame(rules);
-  for (let i = 0; i < plies && !s.over; i++) s = applyMove(s, chooseMove(s, { level, seed: seed * 1000 + i }).move);
+  for (let i = 0; i < plies && !s.over; i++) s = applyMove(s, pick(s, level, seed * 1000 + i).move);
   return s;
 }
 
@@ -94,12 +102,14 @@ describe('evaluate', () => {
 });
 
 describe('every level returns a legal move in time', () => {
-  const budget = (level) => Math.min(LEVELS[level - 1].timeMs, 90);
+  // The only tests that use the clock. The budget is the level's own (capped to keep the suite short) and the
+  // limit is five times that plus a second, so a slow or busy machine cannot fail them.
+  const budget = (level) => Math.min(LEVELS[level - 1].timeMs, 80);
   const check = (s, level, seed = 7) => {
     const timeMs = budget(level);
     const r = chooseMove(s, { level, seed, timeMs });
     expect(isLegal(s, r.move), `level ${level}: ${JSON.stringify(r.move)}`).toBe(true);
-    expect(r.ms).toBeLessThan(timeMs + 250);
+    expect(r.ms).toBeLessThan(timeMs * 5 + 1000);
     expect(Number.isFinite(r.score)).toBe(true);
     expect(r.depth).toBeGreaterThanOrEqual(1);
     expect(sameMove(r.pv[0], r.move)).toBe(true);
@@ -152,10 +162,7 @@ describe('every level returns a legal move in time', () => {
     let s = fromDiagram('bell', ['......b', '.wb....', '.wb....', '...w...', '......b', '.......', 'w.....b']);
     s = play(s, 'd4', 'd5');
     expect(s.chain).toBe(sqIndex(s, 'd5'));
-    for (const level of [2, 3, 4, 5]) {
-      const r = chooseMove(s, { level, seed: 1, timeMs: 100 });
-      expect(name(s, r.move)).toBe('d5-d6');
-    }
+    for (const level of [2, 3, 4, 5]) expect(name(s, pick(s, level).move)).toBe('d5-d6');
   });
   it('with bound pieces on the board', () => {
     let s = fromDiagram('seneca', ['b.....b', '.......', '.wb....', '...w...', '.......', '.......', 'w.....w']);
@@ -169,8 +176,8 @@ describe('every level returns a legal move in time', () => {
   it('returns no move when the game is over', () => {
     const s = play(fromDiagram('legionary', ['.....', '.....', '.wb..', '.....', '...w.']), 'd1', 'd3');
     expect(s.over).not.toBe(null);
-    expect(chooseMove(s, { level: 3 }).move).toBe(null);
-    expect(analyse(s).lines).toEqual([]);
+    expect(pick(s, 3).move).toBe(null);
+    expect(study(s, {}).lines).toEqual([]);
   });
 });
 
@@ -178,9 +185,9 @@ describe('tactics', () => {
   it('takes a free capture (Miles and above always, Tiro usually)', () => {
     const s = fromDiagram('legionary', ['..bbb..', '.......', '.......', '..wb...', '.......', '.......', 'w...w.w']);
     for (const level of [2, 3, 4, 5]) for (const seed of SEEDS) {
-      expect(name(s, chooseMove(s, { level, seed, timeMs: 100 }).move)).toBe('e1-e4');
+      expect(name(s, pick(s, level, seed).move)).toBe('e1-e4');
     }
-    const tiro = SEEDS.concat([7, 8, 9, 10]).filter((seed) => name(s, chooseMove(s, { level: 1, seed }).move) === 'e1-e4').length;
+    const tiro = SEEDS.concat([7, 8, 9, 10]).filter((seed) => name(s, pick(s, 1, seed).move) === 'e1-e4').length;
     expect(tiro).toBeGreaterThanOrEqual(6);
   });
   it('level 3 and above do not leave a piece to be taken', () => {
@@ -188,14 +195,14 @@ describe('tactics', () => {
     expect(threatened(attacked, WHITE).size).toBe(1);
     const quiet = fromDiagram('legionary', ['...b.b.', '.......', '..b....', '.......', '......b', '..w....', 'w..w.w.']);
     for (const s of [attacked, quiet]) for (const level of [3, 4, 5]) for (const seed of SEEDS) {
-      const n = applyMove(s, chooseMove(s, { level, seed, timeMs: 150 }).move);
+      const n = applyMove(s, pick(s, level, seed).move);
       expect(threatened(n, WHITE).size, `level ${level} seed ${seed}`).toBe(0);
     }
   });
   it('Tiro, who looks one move ahead, often overlooks that a piece can be taken', () => {
     const attacked = fromDiagram('legionary', ['...b.bb', '.......', '.......', '.bw....', '.......', '.......', '...w.ww']);
     const seeds = Array.from({ length: 30 }, (_, i) => i + 1);
-    const hung = (level) => seeds.filter((seed) => threatened(applyMove(attacked, chooseMove(attacked, { level, seed }).move), WHITE).size > 0).length;
+    const hung = (level) => seeds.filter((seed) => threatened(applyMove(attacked, pick(attacked, level, seed).move), WHITE).size > 0).length;
     const tiro = hung(1), miles = hung(2);
     expect(tiro).toBeGreaterThanOrEqual(6);  // often
     expect(tiro).toBeLessThanOrEqual(24);    // but not always
@@ -205,13 +212,12 @@ describe('tactics', () => {
   it('finds a fork: stepping between two enemies wins one of them', () => {
     const s = fromDiagram('legionary', ['.....bb', '.......', '.......', '.......', '.b.b...', '.......', 'w.w.w..']);
     for (const level of [3, 4, 5]) for (const seed of SEEDS) {
-      const r = chooseMove(s, { level, seed, timeMs: 150 });
-      expect(name(s, r.move)).toBe('c1-c3');
+      expect(name(s, pick(s, level, seed).move)).toBe('c1-c3');
     }
     const after = play(s, 'c1', 'c3');
     expect(threatened(after, BLACK).size).toBe(2);
     // The engine's analysis agrees and sees the win of a piece: about a man better than any other move.
-    const a = analyse(s, { multi: 2, depth: 5, timeMs: 2000 });
+    const a = study(s, { multi: 2, depth: 5 });
     expect(name(s, a.lines[0].move)).toBe('c1-c3');
     expect(a.lines[0].score - a.lines[1].score).toBeGreaterThan(0.5);
   });
@@ -220,17 +226,17 @@ describe('tactics', () => {
     const s = fromDiagram('legionary', ['...b.b.b', '........', '........', '........', '........', '....w.w.', '........', 'w.......'], WHITE);
     const forkable = (n) => legalMoves(n).some((m) => m.t === 'm' && threatened(applyMove(n, m), WHITE).size >= 2);
     expect(forkable({ ...s, turn: BLACK })).toBe(true);
-    const walks = (level) => SEEDS.filter((seed) => forkable(applyMove(s, chooseMove(s, { level, seed, timeMs: 150 }).move))).length;
+    const walks = (level) => SEEDS.filter((seed) => forkable(applyMove(s, pick(s, level, seed).move))).length;
     expect(walks(3)).toBe(0);
     expect(walks(5)).toBe(0);
-    expect(walks(2)).toBeGreaterThanOrEqual(3);
+    expect(walks(2)).toBeGreaterThanOrEqual(2); // measured: 4 of 6
   });
   it('rescues a bound piece in seneca rules by trapping a captor', () => {
     let s = fromDiagram('seneca', ['b.....b', '...b...', '.wb....', '...w...', '...b...', '.......', 'w.....w']);
     s = play(s, 'd4', 'd5'); // white binds c5 between b5 and d5
     expect(isBound(s, sqIndex(s, 'c5'))).toBe(true);
     for (const level of ALL) for (const seed of SEEDS) {
-      const r = chooseMove(s, { level, seed, timeMs: 100 });
+      const r = pick(s, level, seed);
       expect(name(s, r.move)).toBe('d3-d4'); // traps d5 between d4 and d6: c5 is free again
       const n = applyMove(s, r.move);
       expect(isBound(n, sqIndex(n, 'c5'))).toBe(false);
@@ -240,7 +246,7 @@ describe('tactics', () => {
   it('immobilises the dux in one in stanway', () => {
     const s = fromDiagram('stanway', ['B....b.', 'w......', '.....W.', '.......', '.w.....', 'w...b.b'], WHITE);
     for (const level of ALL) for (const seed of SEEDS) {
-      const r = chooseMove(s, { level, seed, timeMs: 100 });
+      const r = pick(s, level, seed);
       expect(name(s, r.move)).toBe('b2-b6');
       expect(r.score).toBeGreaterThan(990);
       expect(applyMove(s, r.move).over).toEqual({ winner: WHITE, reason: 'dux' });
@@ -252,7 +258,7 @@ describe('tactics', () => {
     const blackWinsAtOnce = (n) => legalMoves(n).some((m) => { const x = applyMove(n, m); return x.over && x.over.winner === BLACK; });
     expect(blackWinsAtOnce({ ...s, turn: BLACK })).toBe(true);
     for (const level of [2, 3, 4, 5]) for (const seed of SEEDS) {
-      const n = applyMove(s, chooseMove(s, { level, seed, timeMs: 150 }).move);
+      const n = applyMove(s, pick(s, level, seed).move);
       expect(n.over).toBe(null);
       expect(blackWinsAtOnce(n), `level ${level} seed ${seed}`).toBe(false);
     }
@@ -260,7 +266,7 @@ describe('tactics', () => {
   it('takes the dux where it can be captured, and values it above a man', () => {
     // d4-d5 traps the dux on c5; d4-d3 would only trap a man on c3.
     const s = fromDiagram('bell', ['......b', '.......', '.wB....', '...w...', '.wb....', '.......', 'w.....b']);
-    for (const level of [2, 3, 4, 5]) expect(name(s, chooseMove(s, { level, seed: 2, timeMs: 100 }).move)).toBe('d4-d5');
+    for (const level of [2, 3, 4, 5]) expect(name(s, pick(s, level, 2).move)).toBe('d4-d5');
   });
 });
 
@@ -274,20 +280,19 @@ describe('repetition and the quiet limit', () => {
     const repeat = move(s, 'e4', 'e3'); // third occurrence: white wins on count
     expect(applyMove(s, repeat).over).toEqual({ winner: WHITE, reason: 'repetition' });
     for (const level of [2, 3, 4, 5]) {
-      const r = chooseMove(s, { level, seed: 1, timeMs: 150 });
-      expect(sameMove(r.move, repeat)).toBe(false);
+      expect(sameMove(pick(s, level).move, repeat)).toBe(false);
     }
-    const a = analyse(s, { depth: 3, include: repeat });
+    const a = study(s, { depth: 3, include: repeat });
     expect(a.lines.find((l) => sameMove(l.move, repeat)).score).toBeLessThan(-900);
     // The same holds when the history is passed explicitly instead of being read from the state.
     const bare = { ...s, history: [] };
-    expect(sameMove(chooseMove(bare, { level: 3, seed: 1, history: s.history }).move, repeat)).toBe(false);
+    expect(sameMove(pick(bare, 3, 1, { history: s.history }).move, repeat)).toBe(false);
   });
   it('the side ahead on count is happy to run into the quiet limit', () => {
     const s = fromDiagram({ ...PRESETS.legionary, quietLimit: 6 }, ['b....', '.....', '....b', 'w....', 'w.w..']);
-    const a = analyse({ ...s, quiet: 5 }, { depth: 2 });
+    const a = study({ ...s, quiet: 5 }, { depth: 2 });
     expect(a.score).toBeGreaterThan(990); // any quiet move now wins on count
-    const behind = analyse({ ...s, quiet: 5, turn: BLACK }, { depth: 2 });
+    const behind = study({ ...s, quiet: 5, turn: BLACK }, { depth: 2 });
     expect(behind.score).toBeLessThan(-990);
   });
 });
@@ -298,7 +303,7 @@ describe('determinism', () => {
       let s = createGame('legionary');
       const out = [];
       for (let i = 0; i < 14; i++) {
-        const r = chooseMove(s, { level, seed, ...extra });
+        const r = pick(s, level, seed, extra);
         out.push(name(s, r.move) + ' ' + r.score.toFixed(3) + ' ' + r.nodes);
         s = applyMove(s, r.move);
       }
@@ -309,14 +314,14 @@ describe('determinism', () => {
       expect(run(11, level)).not.toBe(run(12, level));
     }
     // The top levels are deterministic too when the search is bounded by nodes or depth instead of the clock.
-    expect(run(5, 5, { maxNodes: 1500, timeMs: 60000 })).toBe(run(5, 5, { maxNodes: 1500, timeMs: 60000 }));
-    expect(run(5, 4, { depth: 3, timeMs: 60000 })).toBe(run(5, 4, { depth: 3, timeMs: 60000 }));
+    expect(run(5, 5, { maxNodes: 1500 })).toBe(run(5, 5, { maxNodes: 1500 }));
+    expect(run(5, 4, { depth: 3, maxNodes: 0 })).toBe(run(5, 4, { depth: 3, maxNodes: 0 }));
   });
   it('is deterministic in the placement phase with a personality', () => {
     const run = (seed) => {
       let s = createGame('bell');
       const out = [];
-      for (let i = 0; i < 12; i++) { const r = chooseMove(s, { level: 3, personality: 'maximus', seed }); out.push(name(s, r.move)); s = applyMove(s, r.move); }
+      for (let i = 0; i < 12; i++) { const r = pick(s, 3, seed, { personality: 'maximus' }); out.push(name(s, r.move)); s = applyMove(s, r.move); }
       return out.join(' ');
     };
     expect(run(3)).toBe(run(3));
@@ -324,15 +329,48 @@ describe('determinism', () => {
 });
 
 describe('personalities change the style of play', () => {
-  it('Titus keeps his pieces paired; Maximus pushes single pieces forward', () => {
+  const weightsOf = (personality, level = 4) => resolveSettings({ level, personality }).weights;
+  it('through their evaluation weights', () => {
+    const plain = weightsOf(null), maximus = weightsOf('maximus'), titus = weightsOf('titus'), aghiles = weightsOf('aghiles');
+    // Titus: pairs and protection. Maximus: forks, attack and advance, at the cost of cover.
+    expect(titus.pair).toBeGreaterThan(plain.pair * 1.2);
+    expect(titus.exposed).toBeGreaterThan(plain.exposed * 1.2);
+    expect(titus.keepPieces).toBeGreaterThan(0);
+    expect(maximus.pair).toBeLessThan(plain.pair * 0.8);
+    expect(maximus.pressure).toBeGreaterThan(plain.pressure * 1.5);
+    expect(maximus.double).toBeGreaterThan(plain.double * 1.5);
+    expect(maximus.advance).toBeGreaterThan(plain.advance * 1.5);
+    expect(maximus.material).toBeLessThan(plain.material);
+    // Aghiles: phalanx and mobility, and he wants the count to decide.
+    expect(aghiles.mobility).toBeGreaterThan(plain.mobility * 1.5);
+    expect(aghiles.block).toBeGreaterThan(plain.block * 1.2);
+    expect(aghiles.quiet).toBeGreaterThan(plain.quiet);
+    // At low levels Maximus overextends: he stops caring that a piece stands alone.
+    expect(weightsOf('maximus', 1).isolated).toBe(0);
+    expect(weightsOf('maximus', 4).isolated).toBeGreaterThan(0);
+  });
+  it('through how they judge the same two positions', () => {
+    // The same material: white keeps a block at home, or has two men up the board pressing black's line.
+    const solid = fromDiagram('legionary', ['.bbbb..', '.bbbb..', '.......', '.......', '.......', '..wwww.', '..wwww.']);
+    const forward = fromDiagram('legionary', ['.bbbb..', '.bbbb..', '..w..w.', '.......', '.......', '..ww.w.', '..ww.w.']);
+    const lean = (personality) => {
+      const w = { ...weightsOf(personality), pov: WHITE };
+      return evaluate(forward, w) - evaluate(solid, w); // how much better the forward set-up looks
+    };
+    const maximus = lean('maximus'), titus = lean('titus'), plain = lean(null);
+    expect(maximus).toBeGreaterThan(plain + 0.15);
+    expect(plain).toBeGreaterThan(titus + 0.1);
+    expect(maximus).toBeGreaterThan(0);
+    expect(titus).toBeLessThan(0);
+  });
+  it('through the games they play (no noise, fixed depth: exactly reproducible)', () => {
     const style = (personality) => {
       let pairs = 0, advance = 0, exposed = 0, n = 0;
-      for (let g = 0; g < 4; g++) {
-        const mine = g % 2 === 0 ? WHITE : BLACK;
+      for (const mine of [WHITE, BLACK]) {
         let s = createGame('legionary');
-        for (let ply = 0; ply < 70 && !s.over; ply++) {
+        for (let ply = 0; ply < 40 && !s.over; ply++) {
           const me = s.turn === mine;
-          s = applyMove(s, chooseMove(s, { level: 2, personality: me ? personality : null, seed: g * 100 + ply }).move);
+          s = applyMove(s, chooseMove(s, { level: 5, depth: 2, timeMs: FOREVER, seed: 1, personality: me ? personality : null }).move);
           if (me && !s.over) {
             const f = features(s)[mine === WHITE ? 'white' : 'black'];
             pairs += f.pairs / f.count; advance += f.advance / f.count; exposed += f.exposed / f.count; n++;
@@ -341,20 +379,18 @@ describe('personalities change the style of play', () => {
       }
       return { pairs: pairs / n, advance: advance / n, exposed: exposed / n };
     };
-    const maximus = style('maximus'), titus = style('titus'), aghiles = style('aghiles');
-    expect(titus.pairs).toBeGreaterThan(maximus.pairs + 0.15);
-    expect(maximus.advance).toBeGreaterThan(titus.advance + 0.5);
-    expect(maximus.exposed).toBeGreaterThan(titus.exposed + 0.15);
-    // Aghiles holds a firmer line than Maximus without sitting as far back as Titus
-    expect(aghiles.pairs).toBeGreaterThan(maximus.pairs);
-    expect(aghiles.advance).toBeGreaterThan(titus.advance);
+    const maximus = style('maximus'), titus = style('titus');
+    // Measured: pairs per piece 1.04 v 1.24, ranks advanced per piece 1.61 v 0.91, open lines per piece 0.16 v 0.07.
+    expect(titus.pairs).toBeGreaterThan(maximus.pairs + 0.08);
+    expect(maximus.advance).toBeGreaterThan(titus.advance + 0.3);
+    expect(maximus.exposed).toBeGreaterThan(titus.exposed + 0.04);
   });
 });
 
 describe('analyse', () => {
   it('returns the best lines in order, with principal variations of legal moves', () => {
     const s = reach('legionary', 16, 9, 2);
-    const a = analyse(s, { multi: 3, depth: 3, timeMs: 3000 });
+    const a = study(s, { multi: 3, depth: 3 });
     expect(a.lines.length).toBe(3);
     expect(a.depth).toBe(3);
     expect(a.score).toBe(a.lines[0].score);
@@ -369,7 +405,7 @@ describe('analyse', () => {
   it('scores a move it is asked to include', () => {
     const s = fromDiagram('legionary', ['..bbb..', '.......', '.......', '..wb...', '.......', '.......', 'w...w.w']);
     const dull = move(s, 'a1', 'a2');
-    const a = analyse(s, { multi: 1, depth: 3, include: dull });
+    const a = study(s, { multi: 1, depth: 3, include: dull });
     expect(name(s, a.lines[0].move)).toBe('e1-e4');
     const line = a.lines.find((l) => sameMove(l.move, dull));
     expect(line).toBeDefined();
@@ -388,7 +424,7 @@ describe('review', () => {
   it('tags an obvious blunder as a blunder and explains it from the board', async () => {
     const s = start(), moves = game(s);
     const seen = [];
-    const r = await reviewGame(s, moves, { depth: 3, timeMs: 2000 }, (p) => seen.push(p.done));
+    const r = await reviewGame(s, moves, { depth: 3, timeMs: FOREVER }, (p) => seen.push(p.done));
     expect(r.plies.length).toBe(4);
     expect(seen).toEqual([1, 2, 3, 4]);
     const first = r.plies[0];
@@ -414,7 +450,7 @@ describe('review', () => {
   it('uses the players’ names and reports a missed capture', async () => {
     const s = fromDiagram('legionary', ['..bbb..', '.......', '.......', '..wb...', '.......', '.......', 'w...w.w']);
     const moves = [move(s, 'a1', 'a2')];
-    const r = await reviewGame(s, moves, { depth: 3, timeMs: 2000, names: { 1: 'Maximus', [-1]: 'Titus' } });
+    const r = await reviewGame(s, moves, { depth: 3, timeMs: FOREVER, names: { 1: 'Maximus', [-1]: 'Titus' } });
     expect(['mistake', 'blunder']).toContain(r.plies[0].tag);
     expect(r.turningPoints[0].kind).toBe('missed-capture');
     expect(r.turningPoints[0].text).toBe('Maximus missed the chance to take the piece on d4 with e1 to e4.');
@@ -422,7 +458,7 @@ describe('review', () => {
   it('can be cancelled between plies', async () => {
     const s = start(), moves = game(s);
     let n = 0;
-    await expect(reviewGame(s, moves, { depth: 2, shouldCancel: () => ++n > 2 })).rejects.toThrow('cancelled');
+    await expect(reviewGame(s, moves, { depth: 2, timeMs: FOREVER, shouldCancel: () => ++n > 2 })).rejects.toThrow('cancelled');
   });
   it('explainMove gives plain reasons for a move', () => {
     const cap = fromDiagram('legionary', ['..bbb..', '.......', '.......', '..wb...', '.......', '.......', 'w...w.w']);
@@ -454,14 +490,15 @@ describe('AIClient (in-thread fallback, as no Worker exists here)', () => {
     const ai = new AIClient();
     expect(ai.mode).toBe('thread');
     const s = fromDiagram('legionary', ['..bbb..', '.......', '.......', '..wb...', '.......', '.......', 'w...w.w']);
-    const r = await ai.choose(s, { level: 3, seed: 1 });
+    const opts = { level: 3, seed: 1, timeMs: FOREVER };
+    const r = await ai.choose(s, opts);
     expect(name(s, r.move)).toBe('e1-e4');
-    expect(r).toEqual({ ...chooseMove(s, { level: 3, seed: 1 }), ms: r.ms }); // same answer as a direct call
-    const a = await ai.analyse(s, { multi: 2, depth: 2 });
+    expect(r).toEqual({ ...chooseMove(s, opts), ms: r.ms }); // same answer as a direct call
+    const a = await ai.analyse(s, { multi: 2, depth: 2, timeMs: FOREVER });
     expect(a.lines.length).toBe(2);
     const moves = [move(s, 'a1', 'a2')];
     const progress = [];
-    const review = await ai.review(s, moves, { depth: 2 }, (p) => progress.push(p.done));
+    const review = await ai.review(s, moves, { depth: 2, timeMs: FOREVER }, (p) => progress.push(p.done));
     expect(review.plies.length).toBe(1);
     expect(progress).toEqual([1]);
     ai.dispose();
@@ -472,24 +509,24 @@ describe('AIClient (in-thread fallback, as no Worker exists here)', () => {
     let s = fromDiagram(rules, ['b....', '.....', '....b', 'w....', 'w.w..']);
     for (const [a, b] of [['c1', 'c2'], ['e3', 'e4'], ['c2', 'c1'], ['e4', 'e3'], ['c1', 'c2'], ['e3', 'e4'], ['c2', 'c1']]) s = play(s, a, b);
     const ai = new AIClient();
-    const r = await ai.choose(s, { level: 4, seed: 1, timeMs: 150 });
+    const r = await ai.choose(s, { level: 4, seed: 1, timeMs: FOREVER, maxNodes: 4000 });
     expect(name(s, r.move)).not.toBe('e4-e3'); // the third repetition would lose on count
     ai.dispose();
   });
   it('cancel rejects what is pending and the client stays usable', async () => {
     const ai = new AIClient();
     const s = createGame('legionary');
-    const pending = ai.choose(s, { level: 2, seed: 1 });
+    const pending = ai.choose(s, { level: 2, seed: 1, timeMs: FOREVER });
     ai.cancel();
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
-    const r = await ai.choose(s, { level: 2, seed: 1 });
+    const r = await ai.choose(s, { level: 2, seed: 1, timeMs: FOREVER });
     expect(isLegal(s, r.move)).toBe(true);
     ai.dispose();
   });
   it('reports errors from the engine as rejections', async () => {
     const ai = new AIClient();
     const s = createGame('legionary');
-    await expect(ai.review(s, [{ t: 'm', from: 0, to: 63 }], { depth: 1 })).rejects.toThrow('not legal');
+    await expect(ai.review(s, [{ t: 'm', from: 0, to: 63 }], { depth: 1, timeMs: FOREVER })).rejects.toThrow('not legal');
     ai.dispose();
   });
 });

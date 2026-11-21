@@ -89,7 +89,7 @@ export class Director {
     const world = (v) => () => st.toOverlay(v);
     this.duxAnchors = {
       // Dux keeps to the far corner of the table on his master's side (Titus'), or the right if Titus is not playing
-      home: world(new THREE.Vector3((this.seatOf('titus') === 0 ? -1 : 1) * (board.rows / 2 + 1.0), 0, far - 0.2)),
+      home: () => (st.aspect < 1 ? st.toOverlay(new THREE.Vector3(0, 0, far - 0.35)) : st.toOverlay(new THREE.Vector3((this.seatOf('titus') === 0 ? -1 : 1) * (board.rows / 2 + 1.0), 0, far - 0.2))),
       left: world(new THREE.Vector3(-(board.rows / 2 + 2.2), 0, far + 0.6)),
       right: world(new THREE.Vector3(board.rows / 2 + 2.2, 0, far + 0.6)),
       tray0: world(board.trayPosition(0).add(new THREE.Vector3(1.1, 0, -0.2))),

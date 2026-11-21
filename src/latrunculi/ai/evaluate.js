@@ -371,10 +371,10 @@ export function evaluate(s, W = DEFAULT_WEIGHTS) {
     return mat + sc + penB - penW + F.duxW - F.duxB;
   }
   const diff = F.cntW - F.cntB;
-  if (W.pov !== 0 && W.keepPieces !== 0) sc += W.pov * W.keepPieces * (F.cntW + F.cntB);
-  if (W.pov !== 0 && W.tension !== 0) sc += W.pov * W.tension * (SCAN.prW + SCAN.prB);
   let p2 = 0;
   if (R.quietLimit > 0) { const p = s.quiet / R.quietLimit; p2 = p * p; sc *= 1 - W.fade * p2; }
+  // Matters of taste (they must not fade, or a capture that resets the count would look like a gain in itself).
+  if (W.pov !== 0) sc += W.pov * (W.keepPieces * (F.cntW + F.cntB) + W.tension * (SCAN.prW + SCAN.prB));
 
   // Tactical and decisive terms do not fade.
   sc += mat + F.duxW - F.duxB;

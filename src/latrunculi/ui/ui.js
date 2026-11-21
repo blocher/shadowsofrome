@@ -48,6 +48,7 @@ export class UI {
     this.app = app;
     this.root = document.getElementById('ui');
     this.screen = el('<div></div>'); this.hudLayer = el('<div class="hud hidden"></div>'); this.talk = el('<div></div>'); this.modals = el('<div></div>');
+    this.stack = el('<div class="stack"></div>'); this.talk.append(this.stack); // centred captions and hints
     this.root.append(this.hudLayer, this.screen, this.talk, this.modals);
     this.lines = new Map();
     this.hud = new Hud(this);
@@ -83,7 +84,7 @@ export class UI {
     const node = el(`<div class="bubble panel ${side}">${name ? `<b>${esc(name)}</b>` : ''}${esc(text)}</div>`);
     if (this.app.settings.subtitles === false) node.classList.add('hidden');
     for (const [k, n] of this.lines) if (n.classList.contains(side)) { n.remove(); this.lines.delete(k); }
-    this.talk.append(node); this.lines.set(who, node);
+    (side === 'center' ? this.stack : this.talk).append(node); this.lines.set(who, node);
   }
   hideLine(who) { const n = this.lines.get(who); if (n) { n.remove(); this.lines.delete(who); } }
   clearTalk() { for (const n of this.lines.values()) n.remove(); this.lines.clear(); }
@@ -91,7 +92,7 @@ export class UI {
   toast(text, ms = 5200) {
     if (this.toastNode) this.toastNode.remove();
     const n = this.toastNode = el(`<div class="toast panel">${esc(text)}</div>`);
-    this.talk.append(n);
+    this.stack.append(n);
     clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => { n.remove(); if (this.toastNode === n) this.toastNode = null; }, ms);
   }
