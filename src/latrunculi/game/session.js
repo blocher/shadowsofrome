@@ -26,6 +26,12 @@ export class GameSession {
     this.lost = [[], []];     // plies at which each seat lost pieces (for Titus' nerves)
     this.flags = {};
     this.solverMoves = 0;
+    // picking up a saved game: play its moves again, silently, so the log, take-back and review all work
+    for (const move of cfg.resume || []) {
+      const before = this.state, after = applyMove(before, move);
+      this.log.push({ state: before, move, by: this.seatOf(before.turn), text: notate(before, move, after.last) });
+      this.state = after;
+    }
   }
 
   seatOf(player) { return player === WHITE ? 0 : 1; }
@@ -33,6 +39,8 @@ export class GameSession {
   /** Which glass a seat plays with: the table's set if one was given (the story's blue and white), else the boy's own colour. */
   glassOf(seat) { return this.cfg.glass ? this.cfg.glass[seat] : CHARACTERS[this.seats[seat].char].glass; }
   isHuman(seat) { return this.seats[seat].kind === 'human'; }
+  /** The real person in a seat, if a named player sits there. */
+  playerName(seat) { const x = this.seats[seat]; return x.kind === 'human' ? x.playerName || null : null; }
   get dir() { return this.app.director; }
 
   async run() {
@@ -65,7 +73,7 @@ export class GameSession {
   // ---- talk ----------------------------------------------------------------------------------------------------
   async opening() {
     const [a, b] = [this.char(0), this.char(1)];
-    if (this.cfg.quietTalk) return;
+    if (this.cfg.quietTalk || this.log.length) return; // no greetings when a saved game is picked up again
     const first = this.seatOf(this.state.turn);
     await this.dir.banter('gameStart', this.char(first), { vs: this.char(1 - first), force: true });
     if (this.ended) return;
@@ -147,6 +155,7 @@ export class GameSession {
     this.log.push({ state: before, move, by: seat, text: notate(before, move, after.last) });
     this.state = after;
     this.hintLevel = 0; this.app.board.setHint(null); this.app.board.setThreats([]);
+    this.app.autosave(this);
     await this.app.board.animate(before, after, this.app.sfx);
     this.app.ui.hud.update(this);
     const talk = this.react(before, after, seat);
@@ -187,7 +196,7 @@ export class GameSession {
   }
 
   promptFor(state, seat) {
-    const name = CHARACTERS[this.char(seat)].name;
+    const name = this.playerName(seat) || CHARACTERS[this.char(seat)].name;
     if (state.phase === 'place') {
       const k = seat, dux = state.toPlace[k] === 0;
       return `${name}: place ${dux ? 'your general' : 'a soldier'} on any empty square (${state.toPlace[k] + state.duxToPlace[k]} left)`;
@@ -284,6 +293,7 @@ export class GameSession {
     this.app.board.sync(this.state);
     this.app.board.clearMarks(); this.app.board.setLast([]);
     this.app.ui.hud.update(this);
+    this.app.autosave(this);
     const other = 1 - entry.by;
     if (!this.isHuman(other)) this.dir.banter('undo', this.char(other), { chance: 0.6, gap: 4 });
     return true;
@@ -308,6 +318,7 @@ export class GameSession {
     if (this.cfg.goal) { this.cfg.onEnd && this.cfg.onEnd({ solved: !!this.goalResult, session: this }); return; }
     const winnerSeat = over.winner === 0 ? -1 : this.seatOf(over.winner);
     app.ui.hud.update(this);
+    app.gameFinished(this, winnerSeat);
     if (winnerSeat >= 0) {
       app.sfx.fanfare();
       d.mood(winnerSeat, 'triumphant', 0); d.mood(1 - winnerSeat, 'sulking', 0);

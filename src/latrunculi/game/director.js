@@ -50,7 +50,9 @@ export class Director {
     if (actor && m) actor.setMood(m, 0);
     if (actor) actor.setActive(true);
     this.app.ui.showLine(who, line.text, seat);
+    this.app.music.duck(true);
     await this.app.voice.play(line.id, line.text);
+    this.app.music.duck(false);
     this.speaking = null;
     if (hold) await this.app.stage.wait(hold);
     this.app.ui.hideLine(who);
@@ -65,7 +67,7 @@ export class Director {
    */
   async banter(event, who, opts = {}) {
     const { BANTER, BANTER_VS } = this.app.banter;
-    if (this.quiet && !opts.force) return false;
+    if (this.quiet) return false; // table talk is switched off
     if (this.busy) { if (!opts.force) return false; while (this.busy) await this.app.stage.wait(0.1); }
     if (!opts.force) {
       if (Math.random() > (opts.chance ?? 1) * this.chattiness) return false;
@@ -98,7 +100,7 @@ export class Director {
       head1: () => (this.actors[1] && this.actors[1].ready ? this.actors[1].headTop() : this.duxAnchors.right()),
       square: (i) => world(board.pos(i).add(new THREE.Vector3(0, 0, -0.9))),
     };
-    if (this.dux && this.dux.ready) { this.dux.anchor = this.duxAnchors.home; this.dux.at.copy(this.duxAnchors.home()); }
+    if (this.dux && this.dux.ready) { this.dux.anchor = this.duxAnchors.home; this.dux.at.copy(this.duxAnchors.home()); this.dux.update(0, 0); this.dux.show(); }
   }
   async duxGo(name, pose = 'sit', arg) {
     if (!this.dux || !this.dux.ready || !this.duxAnchors) return;

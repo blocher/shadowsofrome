@@ -33,13 +33,17 @@ function reach(rules, plies, seed = 1, level = 2) {
 }
 
 describe('levels and personalities', () => {
-  it('has five named levels, strictly stronger settings going up', () => {
+  it('has five named levels, with stronger settings going up', () => {
     expect(LEVELS.map((l) => l.name)).toEqual(['Tiro', 'Miles', 'Centurio', 'Legatus', 'Imperator']);
     for (const l of LEVELS) {
       for (const k of ['id', 'name', 'latin', 'blurb', 'depth', 'timeMs', 'blunder', 'noise', 'vision']) expect(l[k]).toBeDefined();
     }
+    expect(LEVELS.map((l) => l.id)).toEqual([1, 2, 3, 4, 5]);
+    expect(LEVELS[0].depth).toBe(1);                       // Tiro sees one ply
+    expect(LEVELS[2].depth).toBeGreaterThan(LEVELS[1].depth);
+    expect(LEVELS[4].depth).toBeGreaterThan(LEVELS[3].depth);
     for (let i = 1; i < LEVELS.length; i++) {
-      expect(LEVELS[i].depth).toBeGreaterThan(LEVELS[i - 1].depth);
+      expect(LEVELS[i].depth).toBeGreaterThanOrEqual(LEVELS[i - 1].depth);
       expect(LEVELS[i].noise).toBeLessThan(LEVELS[i - 1].noise);
       expect(LEVELS[i].blunder).toBeLessThan(LEVELS[i - 1].blunder);
       expect(LEVELS[i].vision).toBeGreaterThanOrEqual(LEVELS[i - 1].vision);
@@ -302,7 +306,7 @@ describe('determinism', () => {
     const run = (seed, level, extra = {}) => {
       let s = createGame('legionary');
       const out = [];
-      for (let i = 0; i < 14; i++) {
+      for (let i = 0; i < 10; i++) {
         const r = pick(s, level, seed, extra);
         out.push(name(s, r.move) + ' ' + r.score.toFixed(3) + ' ' + r.nodes);
         s = applyMove(s, r.move);

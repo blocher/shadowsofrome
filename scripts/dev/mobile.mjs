@@ -3,7 +3,7 @@
 import puppeteer from 'puppeteer-core';
 import sharp from 'sharp';
 const [outDir, mode = 'portrait'] = process.argv.slice(2);
-const SIZES = { portrait: { width: 390, height: 844 }, small: { width: 360, height: 640 }, landscape: { width: 844, height: 390 } };
+const SIZES = { portrait: { width: 390, height: 844 }, small: { width: 360, height: 640 }, tiny: { width: 320, height: 568 }, landscape: { width: 844, height: 390 } };
 const vp = { ...SIZES[mode], deviceScaleFactor: 2, isMobile: true, hasTouch: true };
 const URL0 = process.env.URL || 'http://localhost:5183/';
 const browser = await puppeteer.launch({ protocolTimeout: 60000, executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: 'new', args: ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required', '--mute-audio'] });
@@ -41,7 +41,7 @@ const audit = async (name) => {
 const steps = [
   async () => { await page.goto(URL0, { waitUntil: 'load' }); await sleep(1500); await audit('hub'); },
   async () => { await page.goto(URL0 + 'latrunculi/voices.html', { waitUntil: 'load' }); await sleep(1200); await audit('voices'); },
-  async () => { await page.goto(URL0 + 'latrunculi/', { waitUntil: 'load' }); await sleep(4500); await audit('title'); },
+  async () => { await page.goto(URL0 + 'latrunculi/', { waitUntil: 'load' }); await sleep(4500); await audit('firstvisit'); await clickText('Play as a guest'); await sleep(500); await audit('title'); await clickText('Who is playing?'); await sleep(400); await page.type('.addrow input', 'Benedict'); await clickText('Start'); await sleep(500); await clickText('Playing: Benedict'); await sleep(400); await audit('players'); await clickText('Done'); await sleep(300); },
   async () => { await clickText('Free play'); await sleep(600); await audit('setup'); },
   async () => { await clickText('House rules'); await sleep(400); await ev(`document.querySelector('.setup-box').scrollTo(0, 99999)`); await sleep(300); await audit('house'); },
   async () => { await ev(`app.startGame({ rules: 'legionary', seats: [{ char: 'maximus', kind: 'human' }, { char: 'titus', kind: 'ai', level: 2 }], setting: 'cubiculum' }); 0`); await sleep(9000); await audit('game'); },
@@ -50,7 +50,8 @@ const steps = [
   async () => { await page.keyboard.press('Escape'); await sleep(300); await clickText('Menu'); await sleep(400); await audit('menu'); },
   async () => { await clickText('Settings'); await sleep(400); await audit('settings'); await clickText('Done'); await clickText('Back to the game'); },
   async () => { await ev(`app.freePlayOver({ winnerSeat: 0, over: { winner: 1, reason: 'pieces' }, session: app.session }); 0`); await sleep(1500); await audit('victory'); },
-  async () => { await clickText('Review the game'); await sleep(5000); await audit('review'); await clickText('Close'); await sleep(600); },
+  async () => { await clickText('Review the game'); await sleep(5000); await audit('review'); await clickText('Close'); await sleep(600);
+await ev(`app.toTitle(); app.ui.saved(); 0`); await sleep(500); await audit('saved'); },
   async () => { await ev(`app.openLudus(); 0`); await sleep(600); await audit('ludus'); },
   async () => { await ev(`app.openStory(); 0`); await sleep(600); await audit('storymenu'); },
   async () => { await ev(`app.settings.voice = 0; app.applySettings(); app.story.play(0); 0`); await sleep(2000); await audit('chapter'); await sleep(5200); await audit('scene'); },

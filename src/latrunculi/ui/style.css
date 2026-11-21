@@ -10,6 +10,7 @@ body { --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0p
 #stage { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; display: block; touch-action: none; outline: none; }
 #ui { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; pointer-events: none; overflow: hidden; -webkit-user-select: none; user-select: none; }
 #ui > * { pointer-events: none; }
+html, body { max-width: 100%; position: fixed; inset: 0; width: 100%; } /* the page itself never scrolls or rubber-bands */
 button, select, input { font: inherit; color: inherit; }
 h1, h2, h3 { font-family: var(--caps); font-weight: 700; letter-spacing: 0.06em; margin: 0; }
 p { margin: 0.4em 0; line-height: 1.38; }
@@ -32,7 +33,7 @@ kbd { font-family: var(--caps); font-size: 0.62rem; opacity: 0.6; margin-left: 0
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .shade { background: radial-gradient(120% 90% at 50% 40%, rgba(12, 7, 4, 0.55), rgba(8, 4, 2, 0.92)); }
 
-.title { align-items: flex-end; justify-content: flex-start; background: #0b0705; overflow: hidden; }
+.title { align-items: flex-end; justify-content: flex-start; background: #0b0705; overflow: hidden; overflow: clip; contain: paint; }
 .title .hero { position: absolute; inset: 0; background: center 30% / cover no-repeat; animation: drift 38s ease-in-out infinite alternate; filter: saturate(1.05); }
 .title .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8, 4, 2, 0.92) 0%, rgba(8, 4, 2, 0.55) 34%, rgba(8, 4, 2, 0) 62%), linear-gradient(0deg, rgba(8, 4, 2, 0.85), rgba(8, 4, 2, 0) 45%); }
 @keyframes drift { from { transform: scale(1.04) translate(0, 0); } to { transform: scale(1.1) translate(-1.2%, -1%); } }
@@ -90,6 +91,23 @@ select { max-width: 100%; background: rgba(20, 12, 7, 0.9); border: 1px solid va
 .checks { display: flex; gap: 1.1rem; flex-wrap: wrap; font-size: 0.92rem; color: var(--dim); }
 .checks label { pointer-events: auto; cursor: pointer; display: flex; gap: 0.4em; align-items: center; }
 .checks input { pointer-events: auto; accent-color: #e6b95c; width: 1.05em; height: 1.05em; }
+
+/* ---- players, saved games ---- */
+.titlechips { position: absolute; top: calc(1.4vh + var(--st)); right: calc(1.4vw + var(--sr)); display: flex; gap: 0.4rem; z-index: 2; flex-wrap: wrap; justify-content: flex-end; }
+input.text { pointer-events: auto; width: 100%; background: rgba(10, 6, 3, 0.85); border: 1px solid var(--line); border-radius: 8px; padding: 0.6em 0.75em; font-size: 1.05rem; min-height: 44px; -webkit-user-select: text; user-select: text; }
+input.text:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+.addrow { display: flex; gap: 0.5rem; margin-top: 0.8rem; } .addrow input { flex: 1; min-width: 0; }
+.who-list { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.6rem; }
+.who-row { display: flex; gap: 0.4rem; align-items: stretch; }
+.who-row .pickme { pointer-events: auto; cursor: pointer; flex: 1; min-width: 0; text-align: left; border: 1px solid var(--line); border-radius: 10px; background: rgba(0, 0, 0, 0.28); padding: 0.5rem 0.75rem; min-height: 48px; }
+.who-row.sel .pickme { border-color: var(--gold2); box-shadow: 0 0 0 1px var(--gold); background: linear-gradient(180deg, rgba(120, 82, 34, 0.55), rgba(50, 30, 12, 0.6)); }
+.who-row .pickme b { font-family: var(--caps); letter-spacing: 0.06em; color: var(--gold2); display: block; }
+.who-row .pickme small { color: var(--dim); font-size: 0.84rem; display: block; }
+.sitter { display: inline-flex; align-items: center; gap: 0.4em; font-size: 0.9rem; color: var(--dim); }
+.items.one { grid-template-columns: minmax(0, 1fr); }
+.item.save { cursor: default; grid-template-columns: 2rem minmax(0, 1fr) auto; }
+.item.save:hover { transform: none; border-color: var(--line); }
+.saveacts { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; }
 
 /* ---- list screens (ludus, story) ---- */
 .listing { align-items: center; justify-content: center; padding: max(3vh, var(--st)) max(2vw, var(--sr)) max(3vh, var(--sb)) max(2vw, var(--sl)); }
@@ -229,6 +247,9 @@ select { max-width: 100%; background: rgba(20, 12, 7, 0.9); border: 1px solid va
   .title-box nav, .title-box .fine, .title-box .tag { max-width: none; }
   .title nav .btn { min-width: 0; width: 100%; }
   .kicker { font-size: 0.72rem; letter-spacing: 0.26em; }
+  .titlechips { top: calc(0.8vh + var(--st)); left: 2.5vw; right: 2.5vw; justify-content: space-between; }
+  .item.save { grid-template-columns: minmax(0, 1fr); } .item.save .n { display: none; } .saveacts { justify-content: flex-start; }
+  .who-row { flex-wrap: wrap; } .who-row .pickme { flex-basis: 100%; }
   /* setup and lists */
   .setup, .listing { align-items: stretch; padding: max(1.2vh, var(--st)) 2.5vw max(1.2vh, var(--sb)); }
   .setup-box, .list-box { padding: 0.9rem 0.9rem 1rem; }

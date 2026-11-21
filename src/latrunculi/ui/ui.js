@@ -127,8 +127,9 @@ export class UI {
     const card = el(`<div class="card panel"><h2>Settings</h2>
       <div class="field"><span>Voices</span><input type="range" min="0" max="1" step="0.05" data-k="voice" value="${s.voice}"><span></span></div>
       <div class="field"><span>Sound effects</span><input type="range" min="0" max="1" step="0.05" data-k="sfx" value="${s.sfx}"><span></span></div>
-      <div class="field"><span>Table talk</span><input type="range" min="0" max="1.5" step="0.25" data-k="chat" value="${s.chat}"><span></span></div>
+      <div class="field"><span>Music</span><input type="range" min="0" max="1" step="0.05" data-k="music" value="${s.music}"><span></span></div>
       <div class="checks" style="margin-top:.8rem">
+        <label><input type="checkbox" data-c="talk" ${s.talk !== false ? 'checked' : ''}> Table talk (the boys’ chatter)</label>
         <label><input type="checkbox" data-c="subtitles" ${s.subtitles !== false ? 'checked' : ''}> Subtitles</label>
         <label><input type="checkbox" data-c="reduceMotion" ${s.reduceMotion ? 'checked' : ''}> Reduce motion</label>
         <label><input type="checkbox" data-c="lowGraphics" ${s.lowGraphics ? 'checked' : ''}> Lighter graphics</label>
@@ -170,8 +171,9 @@ export class UI {
   // ---- title -----------------------------------------------------------------------------------------------------
   title() {
     const app = this.app, story = app.storyData && app.storyData.STORY, prog = app.save.story || {};
-    const started = (prog.done || []).length > 0;
+    const started = (prog.done || []).length > 0, me = app.store.current, saves = app.store.saves.length, done = app.store.finished.length;
     const node = el(`<div class="screen title"><div class="hero" style="background-image:url('${ART}ui/hero.webp')"></div>
+      <div class="titlechips"><button class="btn ghost small" data-a="players">${me ? `Playing: ${esc(me.name)}` : 'Who is playing?'}</button><button class="btn ghost small ${app.settings.music > 0 ? 'on' : ''}" data-a="music" aria-label="Music">Music ${app.settings.music > 0 ? 'on' : 'off'}</button></div>
       <div class="title-box">
         <div class="kicker">In the Shadows of Rome</div>
         <h1>Latrunculi</h1>
@@ -179,6 +181,7 @@ export class UI {
         <nav>
           <button class="btn primary" data-a="story">${started ? 'Continue the story' : 'Story'} <small>${esc(story ? story.title : 'The Brigands’ Board')}</small></button>
           <button class="btn" data-a="free">Free play <small>any two of the three</small></button>
+          ${saves + done ? `<button class="btn" data-a="saved">Saved games <small>${saves ? `${saves} to finish` : `${done} to look over`}</small></button>` : ''}
           <button class="btn" data-a="ludus">Ludus <small>learn the game</small></button>
           <button class="btn ghost" data-a="settings">Settings</button>
         </nav>
@@ -187,7 +190,100 @@ export class UI {
     node.addEventListener('click', (e) => {
       const a = e.target.closest('[data-a]'); if (!a) return;
       app.sfx.tick();
-      ({ story: () => app.openStory(), free: () => this.setup(), ludus: () => app.openLudus(), settings: () => this.settingsCard() })[a.dataset.a]();
+      ({
+        story: () => app.openStory(), free: () => this.setup(), ludus: () => app.openLudus(), settings: () => this.settingsCard(), saved: () => this.saved(), players: () => this.players(),
+        music: () => { app.settings.music = app.settings.music > 0 ? 0 : 0.5; app.applySettings(); if (app.settings.music > 0) app.music.start(); this.title(); },
+      })[a.dataset.a]();
+    });
+    this.setScreen(node);
+    // the first visit: ask once who is playing
+    if (!app.store.profiles.length && !app.store.data.asked) { app.store.data.asked = true; app.persist(); this.players(true); }
+  }
+
+  // ---- players ---------------------------------------------------------------------------------------------------
+  /** Ask for a line of text. Resolves to the text, or null. */
+  ask({ title, text = '', placeholder = '', value = '', ok = 'Done' }) {
+    return new Promise((resolve) => {
+      const card = el(`<div class="card panel" style="width:min(440px,100%)"><h2>${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ''}
+        <form><input class="text" type="text" maxlength="24" autocomplete="off" autocapitalize="words" placeholder="${esc(placeholder)}" value="${esc(value)}">
+        <div class="acts"><button type="button" class="btn ghost" data-a="no">Cancel</button><button type="submit" class="btn primary">${esc(ok)}</button></div></form></div>`);
+      const m = this.modal(card), input = card.querySelector('input');
+      m.node.onclose = () => resolve(null);
+      card.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const v = input.value.trim(); m.close(); resolve(v || null); });
+      card.querySelector('[data-a=no]').onclick = () => { m.close(); resolve(null); };
+      setTimeout(() => input.focus(), 60);
+    });
+  }
+
+  /** The player list: pick who is playing, add, rename or remove a player. No passwords; it is only a name. */
+  players(first = false) {
+    const app = this.app, store = app.store;
+    const card = el('<div class="card panel players"></div>');
+    const m = this.modal(card);
+    const story = app.storyData.STORY.chapters.length;
+    const draw = () => {
+      const rows = store.profiles.map((p) => {
+        const pr = store.progress(p.id), r = pr.record, ch = (pr.story.done || []).length;
+        const bits = [r.played ? `${r.played} game${r.played === 1 ? '' : 's'}, ${r.won} won` : 'no games yet', ch ? (ch >= story ? 'story finished' : `story: ${ch} of ${story}`) : null, pr.lessons.length ? `${pr.lessons.filter((x) => !x.startsWith('puzzle:')).length} lessons` : null].filter(Boolean).join(' · ');
+        return `<div class="who-row ${store.data.current === p.id ? 'sel' : ''}"><button class="pickme" data-pick="${p.id}"><b>${esc(p.name)}</b><small>${esc(bits)}</small></button><button class="btn ghost small" data-rename="${p.id}" aria-label="Rename ${esc(p.name)}">Rename</button><button class="btn ghost small" data-remove="${p.id}" aria-label="Remove ${esc(p.name)}">Remove</button></div>`;
+      }).join('');
+      card.innerHTML = `<h2>${first ? 'Who is playing?' : 'Players'}</h2>
+        <p>${first ? 'Give a name so this device can keep your story, your lessons and your record apart from anyone else’s. No password; it is only a name.' : 'Each player keeps a separate story, lessons and record on this device.'}</p>
+        ${rows ? `<div class="who-list">${rows}<div class="who-row ${store.data.current === null ? 'sel' : ''}"><button class="pickme" data-pick=""><b>A guest</b><small>plays without a name</small></button></div></div>` : ''}
+        <form class="addrow"><input class="text" type="text" maxlength="24" autocomplete="off" autocapitalize="words" placeholder="${rows ? 'Add another player' : 'Your name'}"><button type="submit" class="btn primary">${rows ? 'Add' : 'Start'}</button></form>
+        <div class="acts"><button class="btn ghost" data-a="close">${rows ? 'Done' : 'Play as a guest'}</button></div>`;
+      if (!rows) setTimeout(() => { const i = card.querySelector('input'); if (i && matchMedia('(pointer: fine)').matches) i.focus(); }, 60);
+    };
+    draw();
+    const done = () => { m.close(); if (!app.session && !app.mode) this.title(); };
+    m.node.onclose = () => { if (!app.session && !app.mode) this.title(); };
+    card.addEventListener('submit', (e) => { e.preventDefault(); const input = card.querySelector('.addrow input'); if (store.add(input.value)) { app.sfx.tick(); if (first) done(); else draw(); } });
+    card.addEventListener('click', async (e) => {
+      const b = e.target.closest('button'); if (!b || b.closest('form')) return;
+      app.sfx.tick();
+      if (b.dataset.pick !== undefined) { store.choose(b.dataset.pick || null); done(); }
+      else if (b.dataset.rename) { const name = await this.ask({ title: 'Rename player', value: store.name(b.dataset.rename) }); if (name) store.rename(b.dataset.rename, name); draw(); }
+      else if (b.dataset.remove) { if (await this.confirm({ title: `Remove ${store.name(b.dataset.remove)}?`, text: 'Their story progress, lessons and record on this device will be forgotten. Saved games stay.', yes: 'Remove', no: 'Keep' })) store.remove(b.dataset.remove); draw(); }
+      else if (b.dataset.a === 'close') done();
+    });
+  }
+
+  // ---- saved games -----------------------------------------------------------------------------------------------
+  describe(save) {
+    const side = (x) => `${x.kind === 'human' ? (x.playerName ? `${x.playerName} as ` : '') : ''}${CHARACTERS[x.char].name}${x.kind === 'ai' ? ` (${(LEVELS.find((l) => l.id === x.level) || {}).name || 'AI'})` : ''}`;
+    return `${side(save.seats[0])} against ${side(save.seats[1])}`;
+  }
+  ago(t) {
+    const m = Math.round((Date.now() - t) / 60000);
+    if (m < 2) return 'just now'; if (m < 60) return `${m} minutes ago`; if (m < 60 * 36) return `${Math.round(m / 60)} hours ago`;
+    return new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+  }
+  saved() {
+    const app = this.app, store = app.store;
+    const node = el('<div class="screen listing shade"><div class="list-box panel"></div></div>');
+    const box = node.firstElementChild;
+    const draw = () => {
+      const row = (g, done) => {
+        let end = '';
+        if (done && g.over) { const w = g.over.winner === 0 ? -1 : g.over.winner > 0 ? 0 : 1; end = w < 0 ? 'A draw' : `${g.seats[w].kind === 'human' && g.seats[w].playerName ? g.seats[w].playerName : CHARACTERS[g.seats[w].char].name} won`; }
+        return `<div class="item save"><span class="n">${done ? '✓' : '…'}</span><span><b>${esc(this.describe(g))}</b><small>${esc(g.rules.name || 'House rules')} · ${done ? esc(end) : `move ${Math.floor(g.ply / 2) + 1}`} · ${esc(this.ago(g.updated))}</small></span>
+          <span class="saveacts"><button class="btn small primary" data-${done ? 'review' : 'resume'}="${g.id}">${done ? 'Look it over' : 'Take it up'}</button><button class="btn small ghost" data-del="${g.id}" aria-label="Delete this game">Delete</button></span></div>`;
+      };
+      box.innerHTML = `<header><h2>Saved games</h2><button class="btn ghost small" data-a="back">Back</button></header>
+        <p class="lede">Every game with a person at the table is kept as it is played. Unfinished games can be taken up again; finished ones can be looked over move by move.</p>
+        ${store.saves.length ? `<div class="sub">To finish</div><div class="items one">${store.saves.map((g) => row(g, false)).join('')}</div>` : ''}
+        ${store.finished.length ? `<div class="sub">Finished</div><div class="items one">${store.finished.map((g) => row(g, true)).join('')}</div>` : ''}
+        ${store.saves.length + store.finished.length ? '' : '<p>No games have been saved yet.</p>'}`;
+    };
+    draw();
+    box.addEventListener('click', async (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      app.sfx.tick();
+      const find = (id) => store.saves.find((g) => g.id === id) || store.finished.find((g) => g.id === id);
+      if (b.dataset.resume) app.resumeGame(find(b.dataset.resume));
+      else if (b.dataset.review) app.reviewSaved(find(b.dataset.review), () => { app.review = null; app.mode = null; app.clearTable(); app.ui.showHud(false); this.saved(); });
+      else if (b.dataset.del) { if (await this.confirm({ title: 'Delete this game?', text: this.describe(find(b.dataset.del)), yes: 'Delete', no: 'Keep' })) { store.deleteGame(b.dataset.del); draw(); } }
+      else if (b.dataset.a === 'back') this.title();
     });
     this.setScreen(node);
   }
@@ -195,18 +291,25 @@ export class UI {
   // ---- free play setup -------------------------------------------------------------------------------------------
   setup() {
     const app = this.app;
+    const store = app.store, me = store.current ? store.current.id : null;
     const cfg = app.save.lastSetup ? structuredClone(app.save.lastSetup) : {
       seats: [{ char: 'maximus', kind: 'human', level: 3 }, { char: 'aghiles', kind: 'ai', level: 3 }],
       preset: 'legionary', house: { ...PRESETS.legionary, id: 'house', name: 'House rules' }, setting: 'cubiculum', coach: false, showThreats: false,
     };
+    // who sits in each seat: the current player on the left by default, another known player (or a guest) on the right
+    const known = (id) => id === null || store.profiles.some((p) => p.id === id);
+    cfg.seats.forEach((x, i) => { if (x.player === undefined || !known(x.player)) x.player = i === 0 ? me : ((store.profiles.find((p) => p.id !== me) || {}).id ?? null); });
+    if (cfg.seats[0].kind === 'human' && cfg.seats[1].kind !== 'human') cfg.seats[0].player = me;
     const node = el('<div class="screen setup shade"><div class="setup-box panel"></div></div>');
     const box = node.firstElementChild;
+    const playerPick = (i) => `<label class="sitter">Who? <select data-seat="${i}" data-player aria-label="Who is playing this side">${store.profiles.map((p) => `<option value="${p.id}" ${cfg.seats[i].player === p.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}<option value="" ${cfg.seats[i].player === null ? 'selected' : ''}>A guest</option><option value="+">New player…</option></select></label>`;
     const seatHtml = (i) => {
       const s = cfg.seats[i], other = cfg.seats[1 - i].char, c = CHARACTERS[s.char];
       return `<div class="seat"><h3><span>${i === 0 ? 'Left seat' : 'Right seat'}</span><span>${GLASS[c.glass].name} glass</span></h3>
         <div class="picks">${CHARACTER_ORDER.map((id) => `<button class="pick ${s.char === id ? 'sel' : ''} ${other === id ? 'off' : ''}" data-seat="${i}" data-char="${id}" style="background-image:url('${this.card(id)}')" aria-label="${CHARACTERS[id].name}"><i style="background:${GLASS[CHARACTERS[id].glass].css}"></i><span>${CHARACTERS[id].name}</span></button>`).join('')}</div>
         <div class="who"><b>${c.name}.</b> ${esc(c.blurb)} <i>${esc(c.style)}</i></div>
         <div class="row"><div class="seg"><button data-seat="${i}" data-kind="human" class="${s.kind === 'human' ? 'sel' : ''}">You play</button><button data-seat="${i}" data-kind="ai" class="${s.kind === 'ai' ? 'sel' : ''}">AI plays</button></div>
+        ${s.kind === 'human' ? playerPick(i) : ''}
         ${s.kind === 'ai' ? `<select data-seat="${i}" data-level aria-label="AI strength">${LEVELS.map((l) => `<option value="${l.id}" ${l.id === s.level ? 'selected' : ''}>${l.name}: ${esc(l.blurb)}</option>`).join('')}</select>` : ''}</div></div>`;
     };
     const ruleHtml = () => {
@@ -223,7 +326,7 @@ export class UI {
         <div class="grid2">${seatHtml(0)}${seatHtml(1)}</div>
         <div class="sub">Whose rules?</div>${ruleHtml()}
         <div class="sub">Where?</div><div class="places">${SETTING_ORDER.map((id) => `<button class="place ${cfg.setting === id ? 'sel' : ''}" data-place="${id}" style="background-image:url('${ART}backgrounds/${id}.webp')"><span>${esc(SETTINGS[id].name)}</span></button>`).join('')}</div>
-        <div class="foot"><div class="checks"><label><input type="checkbox" data-chk="coach" ${cfg.coach ? 'checked' : ''}> Coach warns me before a blunder</label><label><input type="checkbox" data-chk="showThreats" ${cfg.showThreats ? 'checked' : ''}> Show my pieces in danger</label></div>
+        <div class="foot"><div class="checks"><label><input type="checkbox" data-chk="coach" ${cfg.coach ? 'checked' : ''}> Coach warns me before a blunder</label><label><input type="checkbox" data-chk="showThreats" ${cfg.showThreats ? 'checked' : ''}> Show my pieces in danger</label><label><input type="checkbox" data-talk ${app.settings.talk !== false ? 'checked' : ''}> Table talk</label></div>
         <button class="btn primary" data-a="go">Sit down and play</button></div>`;
     };
     draw();
@@ -243,7 +346,12 @@ export class UI {
     });
     box.addEventListener('change', (e) => {
       const t = e.target;
-      if (t.dataset.level !== undefined) cfg.seats[+t.dataset.seat].level = +t.value;
+      if (t.dataset.player !== undefined) {
+        const seat = cfg.seats[+t.dataset.seat];
+        if (t.value === '+') { this.ask({ title: 'New player', placeholder: 'Name', ok: 'Add' }).then((name) => { const p = name && store.add(name, false); if (p) seat.player = p.id; draw(); }); return; }
+        seat.player = t.value || null;
+      } else if (t.dataset.talk !== undefined) { app.settings.talk = t.checked; app.applySettings(); }
+      else if (t.dataset.level !== undefined) cfg.seats[+t.dataset.seat].level = +t.value;
       else if (t.dataset.opt) { const k = t.dataset.opt, raw = t.value; cfg.house[k] = raw === 'true' ? true : raw === 'false' ? false : isNaN(+raw) ? raw : +raw; cfg.house = { ...normalizeRules(cfg.house), id: 'house', name: 'House rules' }; draw(); }
       else if (t.dataset.chk) cfg[t.dataset.chk] = t.checked;
     });
@@ -276,6 +384,7 @@ class Hud {
         <button class="btn small" data-a="threats">Danger<kbd>T</kbd></button>
         <button class="btn small" data-a="coach">Coach<kbd>C</kbd></button>
         <button class="btn small" data-a="view">View<kbd>V</kbd></button>
+        <button class="btn small" data-a="talk" title="The boys’ table talk">Talk</button>
         <button class="btn small primary hidden" data-a="endturn">End turn</button>
         <button class="btn small hidden" data-a="pause">Pause</button>
         <button class="btn small hidden" data-a="speed">Speed ×1</button>
@@ -290,6 +399,7 @@ class Hud {
   act(a) {
     const app = this.ui.app, s = app.session;
     if (a === 'menu') return this.ui.menu();
+    if (a === 'talk') { const on = app.settings.talk === false; app.settings.talk = on; app.applySettings(); if (!on) app.director.stopSpeaking(); this.btn.talk.classList.toggle('on', on); this.ui.toast(on ? 'Table talk on.' : 'Table talk off: the boys will play in silence.', 2600); return; }
     if (!s) return;
     if (a === 'rules') this.ui.rulesCard(s.rules);
     else if (a === 'hint') s.hint();
@@ -312,7 +422,8 @@ class Hud {
     const turnSeat = st.over ? -1 : st.turn > 0 ? 0 : 1;
     s.seats.forEach((seat, i) => {
       const c = CHARACTERS[seat.char], g = GLASS[s.glassOf ? s.glassOf(i) : c.glass], lvl = LEVELS.find((l) => l.id === seat.level);
-      const role = seat.kind === 'human' ? c.epithet : `${lvl ? lvl.name : 'AI'} · AI`;
+      const person = seat.kind === 'human' ? seat.playerName || null : null;
+      const role = seat.kind === 'human' ? (person ? `played by ${person}` : c.epithet) : `${lvl ? lvl.name : 'AI'} · AI`;
       const toPlace = st.phase === 'place' ? st.toPlace[i] + st.duxToPlace[i] : 0;
       this.plates[i].classList.toggle('turn', i === turnSeat);
       this.plates[i].innerHTML = `<h3><span class="dot" style="background:${g.css}"></span>${esc(c.name)}<span class="think" data-think>is thinking…</span></h3><div class="role">${esc(role)}</div>
@@ -323,6 +434,7 @@ class Hud {
     this.btn.pause.classList.toggle('hidden', anyHuman); this.btn.speed.classList.toggle('hidden', anyHuman);
     this.btn.endturn.classList.toggle('hidden', !(st.chain >= 0 && !st.over && s.isHuman(turnSeat)));
     this.btn.threats.classList.toggle('on', !!s.showThreats); this.btn.coach.classList.toggle('on', !!s.coach);
+    this.btn.talk.classList.toggle('on', this.ui.app.settings.talk !== false); this.btn.talk.classList.toggle('hidden', !!s.cfg.quietTalk || !!s.cfg.noHelp);
     this.btn.undo.disabled = !s.log.some((e) => s.isHuman(e.by));
   }
   setPrompt(text) { this.f.prompt.textContent = text || ''; }

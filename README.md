@@ -14,6 +14,10 @@ The Roman game of little brigands, played between Maximus, Titus and Aghiles, wi
 - **Story.** *The Brigands' Board*: a mystery in nine chapters, each built around a match or a problem to solve.
 - **Ludus.** Ten lessons and a set of problems; hints in three steps; a coach that warns before a blunder.
 - **Review.** After a game: an advantage graph, every move graded, the turning points in words, and "play on from here".
+- **Players and saved games.** A name picker (no passwords) lets several people share a device, each with their own
+  story progress, lessons and record. Games are saved move by move and can be taken up again or looked over later.
+- **Sound.** A quiet generated soundtrack, voices and table talk, each with its own switch. Built for phones as well
+  as desktops.
 
 See [PLAN.md](PLAN.md) for the design, [docs/latrunculi-research.md](docs/latrunculi-research.md) for the history
 and rules research, [docs/story-script.md](docs/story-script.md) for the full script, and [docs/art.md](docs/art.md)

@@ -198,11 +198,12 @@ export class Dux {
     const sit = await loadTexture('dux/sit.webp');
     if (!sit) return false;
     this.poses.sit = sit; this.mat.map = sit; this.mat.needsUpdate = true;
-    this.mesh.visible = true; this.shadow.visible = true; this.ready = true;
-    this.stage.tween(0.8, (t) => { this.mat.opacity = t; }, 'out');
+    this.ready = true; // he appears when a table is laid (see show)
     for (const p of DUX_POSES) if (p !== 'sit') loadTexture(`dux/${p}.webp`).then((t) => { if (t) this.poses[p] = t; });
     return true;
   }
+  /** Bring Dux on, the first time a table is laid. */
+  show() { if (!this.ready || this.mesh.visible) return; this.mesh.visible = true; this.shadow.visible = true; this.stage.tween(0.8, (t) => { this.mat.opacity = t; }, 'out'); }
   dispose() { this.stage.overlay.remove(this.mesh, this.shadow); for (const t of Object.values(this.poses)) t.dispose(); }
 
   setPose(pose, hold = 0) {
@@ -234,7 +235,7 @@ export class Dux {
     const sx = s * (1 + this.squash * 0.12), sy = s * (1 - this.squash * 0.1 + bob * 3);
     this.mesh.scale.set(sx * this.face, sy, 1);
     this.mesh.position.set(this.at.x, this.at.y + sy * 0.466 + this.hop, 0);
-    this.shadow.visible = this.onGround || this.moving;
+    this.shadow.visible = this.mesh.visible && (this.onGround || this.moving);
     this.shadow.scale.set(s * 0.8, s * 0.5, 1);
     this.shadow.position.set(this.at.x, this.at.y + 0.01, 0);
     this.shadow.material.uniforms.uA.value = 0.5 * (1 - Math.min(1, this.hop * 4));

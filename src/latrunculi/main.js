@@ -12,26 +12,34 @@ import { Ludus } from './game/tutorial.js';
 import { StoryMode } from './game/story.js';
 import { Voice } from '../shared/voice.js';
 import { Sfx } from '../shared/sfx.js';
+import { Music } from '../shared/music.js';
+import { Store } from '../shared/profiles.js';
+import { serialize, deserialize } from './engine/engine.js';
+import { normalizeRules } from './engine/rules.js';
 import { CHARACTERS } from '../shared/characters.js';
 import * as banter from './story/banter.js';
 import * as storyData from './story/script.js';
 import { TUTORIAL } from './story/tutorial-lines.js';
 
-const SAVE_KEY = 'shadows-of-rome-latrunculi-v1';
 
 class App {
   constructor() {
-    this.settings = { voice: 1, sfx: 0.7, chat: 1, subtitles: true, reduceMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches, lowGraphics: false };
-    this.save = { story: { done: [], winners: {} }, lessons: [], lastSetup: null, storyLevel: 2 };
-    try { const raw = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (raw) { Object.assign(this.settings, raw.settings || {}); Object.assign(this.save, raw.save || {}); } } catch (e) { /* first visit */ }
+    // device settings, the list of players, and each player's progress and saved games
+    this.store = new Store('latrunculi', { voice: 1, sfx: 0.7, music: 0.5, talk: true, subtitles: true, reduceMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches, lowGraphics: false });
     this.banter = banter; this.storyData = storyData; this.tutorialLines = TUTORIAL;
     this.session = null; this.mode = null; this.actors = [null, null]; this.board = null;
   }
-  persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify({ settings: this.settings, save: this.save })); } catch (e) { /* private mode */ } }
+  get settings() { return this.store.settings; }
+  /** The current player's progress (story chapters, lessons, last table, record). */
+  get save() { return this.store.progress(); }
+  persist() { this.store.persist(); }
 
   async init() {
     this.stage = new Stage(document.getElementById('stage'));
-    this.sfx = new Sfx(); this.voice = new Voice(); this.ai = new AIClient();
+    this.sfx = new Sfx(); this.voice = new Voice(); this.ai = new AIClient(); this.music = new Music();
+    // sound may only begin after a tap or a click
+    const wake = () => { if (this.settings.music > 0) this.music.start(); };
+    window.addEventListener('pointerdown', wake, { passive: true }); window.addEventListener('keydown', wake);
     this.input = new BoardInput(this.stage);
     this.ui = new UI(this);
     this.director = new Director(this);
@@ -56,7 +64,8 @@ class App {
   applySettings() {
     const s = this.settings;
     this.voice.volume = s.voice; this.sfx.volume = s.sfx;
-    if (this.director) this.director.chattiness = s.chat;
+    this.music.setVolume(s.music); if (s.music > 0 && this.music.ctx) this.music.start();
+    if (this.director) this.director.quiet = s.talk === false;
     if (this.stage) {
       this.stage.reduceMotion = s.reduceMotion;
       this.stage.renderer.setPixelRatio(s.lowGraphics ? 1 : Math.min(window.devicePixelRatio || 1, 2));
@@ -84,6 +93,7 @@ class App {
       this.input.setBoard(this.board);
     }
     const jobs = [st.setSetting(setting || 'cubiculum')];
+    this.music.setScene(setting || 'cubiculum');
     seats.forEach((seat, i) => {
       const cur = this.actors[i];
       if (cur && cur.id === seat.char) return;
@@ -101,7 +111,7 @@ class App {
   clearTable() {
     if (this.session) { this.session.stop(); this.session = null; }
     this.epoch = (this.epoch || 0) + 1; // running lessons and story scenes notice this and stop
-    this.input.cancel(); this.director.stopSpeaking(); this.director.quiet = false;
+    this.input.cancel(); this.director.stopSpeaking(); this.director.quiet = this.settings.talk === false;
     if (this.cutLayer) { this.cutLayer.remove(); this.cutLayer = null; }
     this.ui.clearTalk(); this.ui.clearVictory(); this.ui.hud.setPrompt('');
     if (this.review) { this.review.close(true); this.review = null; }
@@ -130,9 +140,23 @@ class App {
   }
 
   // ---- free play -------------------------------------------------------------------------------------------------
+  /** Name the people at the table: each human seat keeps the id and the name of the player sitting there. */
+  seat(seats) {
+    return seats.map((x) => {
+      const out = { ...x };
+      if (out.kind !== 'human') { delete out.player; delete out.playerName; return out; }
+      if (out.player === undefined) out.player = this.store.current ? this.store.current.id : null;
+      out.playerName = this.store.name(out.player) || out.playerName || null;
+      return out;
+    });
+  }
+
   async startGame(cfg) {
     this.clearTable();
     this.mode = cfg.mode || null;
+    cfg = { ...cfg, rules: normalizeRules(cfg.rules), seats: this.seat(cfg.seats) };
+    // free games with a person at the table are saved as they go, so they can be picked up later
+    if (!cfg.mode && !cfg.goal && !cfg.saveId && cfg.seats.some((x) => x.kind === 'human')) cfg.saveId = this.store.newId();
     this.lastCfg = cfg;
     this.ui.setScreen(null);
     const session = this.session = new GameSession(this, { ...cfg, onEnd: cfg.onEnd || ((r) => this.freePlayOver(r)) });
@@ -143,18 +167,48 @@ class App {
     session.run();
     return session;
   }
-  restart() { if (this.lastCfg) this.startGame({ ...this.lastCfg, startState: undefined }); }
+  restart() { if (this.lastCfg) this.startGame({ ...this.lastCfg, startState: undefined, resume: undefined, saveId: undefined }); }
+
+  /** What is kept of a game so it can be resumed or reviewed: the table, the starting position and the moves. */
+  snapshot(session) {
+    const c = session.cfg;
+    return {
+      id: c.saveId, rules: session.rules, seats: session.seats, setting: c.setting, glass: c.glass || null, coach: session.coach, showThreats: session.showThreats,
+      start: serialize(session.start), moves: session.log.map((e) => e.move), ply: session.state.ply, over: session.state.over || null,
+    };
+  }
+  /** Called by the session after every move and take-back. */
+  autosave(session) { if (session.cfg.saveId && !session.state.over) this.store.saveGame(this.snapshot(session)); }
+  /** Called by the session when a game (not a set problem) ends: records and the finished-games shelf. */
+  gameFinished(session, winnerSeat) {
+    session.seats.forEach((x, i) => { if (x.kind === 'human' && x.player) this.store.tally(x.player, winnerSeat < 0 ? 'drawn' : winnerSeat === i ? 'won' : 'lost'); });
+    if (session.cfg.saveId) this.store.finishGame(this.snapshot(session));
+  }
+  tableOf(save) { return { rules: save.rules, seats: save.seats, setting: save.setting, glass: save.glass || undefined, coach: save.coach, showThreats: save.showThreats }; }
+  /** Sit back down at a saved game. */
+  resumeGame(save) { return this.startGame({ ...this.tableOf(save), startState: deserialize(save.start), resume: save.moves, saveId: save.id }); }
+  /** Open a finished game in the review. */
+  async reviewSaved(save, onClose) {
+    this.clearTable();
+    this.ui.setScreen(null);
+    const cfg = { ...this.tableOf(save), seats: this.seat(save.seats), startState: deserialize(save.start), resume: save.moves };
+    const session = new GameSession(this, cfg);
+    await this.setTable({ rules: session.rules, seats: cfg.seats, setting: cfg.setting, glass: cfg.glass });
+    this.board.sync(session.state);
+    this.mode = 'review';
+    this.openReview(session, onClose);
+  }
 
   freePlayOver({ winnerSeat, over, session }) {
-    const name = winnerSeat >= 0 ? CHARACTERS[session.char(winnerSeat)].name : '';
+    const boy = winnerSeat >= 0 ? CHARACTERS[session.char(winnerSeat)].name : '', person = winnerSeat >= 0 ? session.playerName(winnerSeat) : null;
     this.ui.victory({
       title: winnerSeat >= 0 ? 'Imperator' : 'Honours even',
-      who: winnerSeat >= 0 ? `${name} wins the day` : 'Neither army could break the other',
+      who: winnerSeat >= 0 ? (person ? `${person} wins the day, as ${boy}` : `${boy} wins the day`) : 'Neither army could break the other',
       why: GameSession.reasonText(over, session.rules),
       actions: [
         { label: 'Review the game', primary: true, run: () => this.openReview(session) },
         { label: 'Play again', run: () => this.restart() },
-        { label: 'Swap seats', run: () => this.startGame({ ...this.lastCfg, seats: [this.lastCfg.seats[1], this.lastCfg.seats[0]], startState: undefined }) },
+        { label: 'Swap seats', run: () => this.startGame({ ...this.lastCfg, seats: [this.lastCfg.seats[1], this.lastCfg.seats[0]], startState: undefined, resume: undefined, saveId: undefined }) },
         { label: 'Leave the table', run: () => this.toTitle() },
       ],
     });

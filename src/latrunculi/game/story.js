@@ -107,7 +107,7 @@ export class StoryMode {
     if (g && g.type === 'match') {
       const side = await this.chooseSide(ch, chars);
       if (!alive()) return;
-      seats.forEach((s, i) => { s.kind = i === side ? 'human' : 'ai'; });
+      seats.forEach((s, i) => { s.kind = i === side ? 'human' : 'ai'; delete s.player; });
       const result = await new Promise((resolve) => {
         app.startGame({ mode: 'story', rules, seats, setting: ch.setting || 'cubiculum', coach: false, glass, onEnd: resolve });
       });

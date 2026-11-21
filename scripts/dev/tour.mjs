@@ -17,6 +17,7 @@ const clickText = async (text) => { const ok = await page.evaluate((t) => { cons
 const clickSquare = async (name) => { const p = await page.evaluate((n) => { const s = app.session ? app.session.state : null; const cols = app.board.cols; const i = (n.charCodeAt(0) - 97) + (parseInt(n.slice(1), 10) - 1) * cols; const v = app.board.pos(i, 0.08); return app.stage.toPixels(v); }, name); await page.mouse.click(p.x, p.y); await sleep(350); };
 
 await page.goto(URL0, { waitUntil: 'load' }); await sleep(4500);
+await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent.includes('Play as a guest')); if (b) b.click(); }); await sleep(400);
 for (const step of steps) {
   try {
     if (step === 'title') await shot('01-title');
