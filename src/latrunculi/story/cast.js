@@ -5,7 +5,7 @@ export const MODEL = 'eleven_multilingual_v2';
 
 export const CAST = {
   narrator: {
-    voice: 'george',
+    voice: 'bill',
     candidates: {
       george: { id: 'JBFqnCBsd6RMkjVDRZzb', label: 'George: warm British storyteller', s: { stability: 0.45, similarity_boost: 0.75, style: 0.35 } },
       christopher: { id: 'G17SuINrv2H9FC6nvetn', label: 'Christopher: smooth, calm, very English', s: { stability: 0.5, similarity_boost: 0.75, style: 0.3 } },
@@ -13,7 +13,7 @@ export const CAST = {
     },
   },
   maximus: {
-    voice: 'dylan',
+    voice: 'liam',
     candidates: {
       dylan: { id: 'NuIlfu52nTXRM2NXDrjS', label: 'Dylan: young, calm, precise', s: { stability: 0.45, similarity_boost: 0.75, style: 0.35 } },
       liam: { id: 'TX3LPaxmHKxFdv7VOQHJ', label: 'Liam: young, quick, confident', s: { stability: 0.4, similarity_boost: 0.72, style: 0.4 } },
@@ -29,7 +29,7 @@ export const CAST = {
     },
   },
   aghiles: {
-    voice: 'edwin',
+    voice: 'brian',
     candidates: {
       edwin: { id: 'CMUEYyUNA4TrldQy4HLM', label: 'Edwin: calm, steady, deep', s: { stability: 0.55, similarity_boost: 0.78, style: 0.2 } },
       harry: { id: 'SOYHLrjzK2X1ezoPC6cr', label: 'Harry: young, rough-edged', s: { stability: 0.5, similarity_boost: 0.75, style: 0.25 } },

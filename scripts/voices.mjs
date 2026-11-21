@@ -1,9 +1,10 @@
 // Records the spoken lines with ElevenLabs into public/voice/<id>.mp3 and writes public/voice/manifest.json.
 //   node scripts/voices.mjs [--force] [--only <prefix,prefix>] [--speaker <id,id>] [--dry]
 //   node scripts/voices.mjs --audition      record every candidate voice reading a few real lines (public/voice/audition/)
+//   node scripts/voices.mjs --level         even out the loudness of the recordings already made (needs ffmpeg)
 // The key is read from ELEVENLABS_API_KEY (environment or the git-ignored .env file) and never written anywhere.
 // A line is recorded again only when its text or its speaker's voice has changed.
-import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto';
+import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto'; import { spawnSync } from 'node:child_process';
 import { STORY } from '../src/latrunculi/story/script.js';
 import { BANTER, BANTER_VS } from '../src/latrunculi/story/banter.js';
 import { TUTORIAL } from '../src/latrunculi/story/tutorial-lines.js';
@@ -48,6 +49,26 @@ async function tts(voice, text, file) {
   }
   console.error('  gave up', path.basename(file)); return false;
 }
+/**
+ * Bring a recording to about the same loudness as the others, so nobody has to ride the volume. The synthesiser's
+ * level wanders by 20 dB from line to line. Quiet lines stay a little quieter than loud ones; a limiter keeps the
+ * peaks in. Does nothing when ffmpeg is missing or the line is already close. Returns the gain applied, in dB.
+ */
+const TARGET = -21, HAVE_FFMPEG = spawnSync('ffmpeg', ['-version']).status === 0;
+function level(file) {
+  if (!HAVE_FFMPEG) return 0;
+  const out = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'volumedetect', '-f', 'null', '-'], { encoding: 'utf8' }).stderr || '';
+  const mean = parseFloat((out.match(/mean_volume: (-?[\d.]+)/) || [])[1]), max = parseFloat((out.match(/max_volume: (-?[\d.]+)/) || [])[1]);
+  if (!isFinite(mean) || !isFinite(max)) return 0;
+  let gain = (TARGET - mean) * 0.85;                         // most of the way: a murmur stays a murmur
+  gain = Math.max(-10, Math.min(10, gain, -1 - max + 6));     // at most 6 dB into the limiter
+  if (Math.abs(gain) < 1) return 0;
+  const tmp = file + '.tmp.mp3';
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', file, '-af', `volume=${gain.toFixed(2)}dB,alimiter=limit=0.891:attack=3:release=60:level=disabled`, '-ar', '44100', '-ac', '1', '-c:a', 'libmp3lame', '-b:a', '64k', tmp]);
+  if (r.status !== 0 || !fs.existsSync(tmp) || fs.statSync(tmp).size < 500) { fs.rmSync(tmp, { force: true }); return 0; }
+  fs.renameSync(tmp, file);
+  return gain;
+}
 const pool = async (items, n, fn) => { const q = items.slice(); await Promise.all(Array.from({ length: n }, async () => { while (q.length) await fn(q.shift()); })); };
 const sha = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 12);
 
@@ -83,6 +104,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(0);
   }
 
+  if (flag('level')) {
+    if (!HAVE_FFMPEG) { console.error('ffmpeg is not installed.'); process.exit(1); }
+    let n = 0; for (const l of lines) { const f = path.join(OUT, l.id + '.mp3'); if (fs.existsSync(f) && level(f)) n++; }
+    console.log(`levelled ${n} of ${lines.length} recordings`);
+    process.exit(0);
+  }
+
   const man = fs.existsSync(MAN) ? JSON.parse(fs.readFileSync(MAN, 'utf8')) : {}; man.hash = man.hash || {};
   const only = val('only'), speakers = val('speaker'), force = flag('force');
   const want = (l) => (!only.length || only.some((p) => l.id.startsWith(p))) && (!speakers.length || speakers.includes(l.who));
@@ -90,7 +118,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const todo = lines.filter((l) => want(l) && (force || man.hash[l.id] !== hashOf(l) || !fs.existsSync(path.join(OUT, l.id + '.mp3'))));
   console.log(`${todo.length} of ${lines.length} lines to record (${chars(todo)} characters)`);
   if (!flag('dry')) {
-    await pool(todo, 3, async (l) => { const c = CAST[l.who]; if (await tts(c.candidates[c.voice], l.text, path.join(OUT, l.id + '.mp3'))) man.hash[l.id] = hashOf(l); });
+    await pool(todo, 3, async (l) => { const c = CAST[l.who]; const f = path.join(OUT, l.id + '.mp3'); if (await tts(c.candidates[c.voice], l.text, f)) { level(f); man.hash[l.id] = hashOf(l); } });
     for (const id of Object.keys(man.hash)) if (!byId.has(id)) { delete man.hash[id]; fs.rmSync(path.join(OUT, id + '.mp3'), { force: true }); }
     man.lines = lines.filter((l) => man.hash[l.id] && fs.existsSync(path.join(OUT, l.id + '.mp3'))).map((l) => l.id);
     fs.writeFileSync(MAN, JSON.stringify(man));

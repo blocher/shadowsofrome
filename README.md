@@ -44,7 +44,9 @@ npm run voices:audition   # candidate voices reading sample lines -> /latrunculi
 npm run voices            # record every line that is new or changed -> public/voice/
 ```
 
-Lines without a recording still appear as subtitles.
+All 679 lines are recorded. A line is recorded again only when its text or its speaker's voice changes; with ffmpeg
+installed each new recording is brought to the same loudness as the rest. Lines without a recording still appear as
+subtitles.
 
 ### Layout
 

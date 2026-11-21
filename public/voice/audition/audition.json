@@ -1,6 +1,6 @@
 {
  "narrator": {
-  "chosen": "george",
+  "chosen": "bill",
   "lines": [
    {
     "id": "pro_in_01",
@@ -36,7 +36,7 @@
   }
  },
  "maximus": {
-  "chosen": "dylan",
+  "chosen": "liam",
   "lines": [
    {
     "id": "bn_max_capture_1",
@@ -122,7 +122,7 @@
   }
  },
  "aghiles": {
-  "chosen": "edwin",
+  "chosen": "brian",
   "lines": [
    {
     "id": "bn_agh_capture_2",
