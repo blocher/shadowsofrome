@@ -13,6 +13,7 @@ const errors = [];
 page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text().slice(0, 300)); });
 page.on('requestfailed', (r) => errors.push('failed: ' + r.url().slice(-80)));
+page.on('response', (r) => { if (r.status() >= 400) errors.push(r.status() + ' ' + r.url().slice(-70)); });
 await page.goto(url, { waitUntil: 'load', timeout: 60000 });
 await new Promise((r) => setTimeout(r, +opt('wait', 4000)));
 for (const k of ['js', 'js2', 'js3']) {

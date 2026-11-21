@@ -45,7 +45,7 @@ export class Ludus {
     let state = lesson.steps[0].make();
     await app.setTable({ rules: state.rules, seats, setting: 'cubiculum', glass: ['white', 'blue'] });
     if (app.epoch !== epoch) return;
-    const pseudo = { state, rules: { ...state.rules, name: T.title }, seats, cfg: { noHelp: true, goalText: `Lesson: ${T.title}` }, isHuman: (i) => i === 0, log: [], showThreats: false, coach: false };
+    const pseudo = { state, rules: { ...state.rules, name: T.title }, seats, cfg: { noHelp: true, goalText: T.summary || '' }, isHuman: (i) => i === 0, glassOf: (i) => ['white', 'blue'][i], log: [], showThreats: false, coach: false };
     const refresh = () => { pseudo.state = state; app.ui.hud.update(pseudo); };
     app.board.sync(state); app.board.clearMarks(); app.board.setLast([]);
     app.ui.showHud(true); refresh();

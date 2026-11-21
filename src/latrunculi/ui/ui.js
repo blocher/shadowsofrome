@@ -306,7 +306,7 @@ class Hud {
     this.f.rules.textContent = s.rules.name || 'House rules';
     let meta = st.phase === 'place' ? 'placing pieces' : `move ${Math.floor(st.ply / 2) + 1}`;
     if (st.phase === 'move' && s.rules.quietLimit && st.quiet >= s.rules.quietLimit * 0.6 && !st.over) meta += ` · ${Math.ceil((s.rules.quietLimit - st.quiet) / 2)} quiet moves until the count`;
-    if (s.cfg.goal) meta = s.cfg.goalText || meta;
+    if (s.cfg.goalText) meta = s.cfg.goalText;
     this.f.meta.textContent = meta;
     const turnSeat = st.over ? -1 : st.turn > 0 ? 0 : 1;
     s.seats.forEach((seat, i) => {

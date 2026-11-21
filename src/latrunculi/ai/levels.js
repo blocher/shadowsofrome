@@ -66,7 +66,7 @@ export const PERSONALITIES = {
   titus: {
     id: 'titus', name: 'Titus',
     style: 'Experienced and cautious: keeps his pieces paired, avoids even trades, and plays worse when rattled.',
-    mul: { pair: 1.8, block: 1.8, exposed: 1.6, isolated: 1.6, sandwich: 1.3, pressure: 0.85, advance: 0.7, corner: 1.3 },
+    mul: { pair: 1.5, block: 1.5, exposed: 1.2, isolated: 1.2, sandwich: 1.3, threat: 1.2, forked: 1.15, corner: 1.3 },
     add: { keepPieces: 0.02 },
     low: null,
     // `rattled` (0..1, set by the game after he loses pieces) is multiplied by these per-level amounts.

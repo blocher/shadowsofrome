@@ -49,7 +49,7 @@ export const DEFAULT_WEIGHTS = {
   simplify: 0.3,     // the side ahead on count prefers fewer pieces on the board
   placeThreat: 0.5,  // placement phase: a piece that could be trapped at once when movement begins
   placePair: 1,      // placement phase: extra multiplier share for pairs (pairs count 1 + placePair times)
-  keepPieces: 0,     // style: dislike of even trades (per piece on the board, for side `pov`, when level)
+  keepPieces: 0,     // style: dislike of trades (per piece left on the board, for side `pov`)
   tension: 0,        // style: liking for sharp positions (per half-flanked piece of EITHER side, for side `pov`)
   pov: 0,            // whose taste `keepPieces` and `tension` express (1 white, -1 black, 0 off); set by the search
 };
@@ -371,7 +371,7 @@ export function evaluate(s, W = DEFAULT_WEIGHTS) {
     return mat + sc + penB - penW + F.duxW - F.duxB;
   }
   const diff = F.cntW - F.cntB;
-  if (diff === 0 && W.pov !== 0 && W.keepPieces !== 0) sc += W.pov * W.keepPieces * (F.cntW + F.cntB);
+  if (W.pov !== 0 && W.keepPieces !== 0) sc += W.pov * W.keepPieces * (F.cntW + F.cntB);
   if (W.pov !== 0 && W.tension !== 0) sc += W.pov * W.tension * (SCAN.prW + SCAN.prB);
   let p2 = 0;
   if (R.quietLimit > 0) { const p = s.quiet / R.quietLimit; p2 = p * p; sc *= 1 - W.fade * p2; }

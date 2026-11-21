@@ -93,7 +93,7 @@ export class StoryMode {
     if (startState) app.board.sync(startState); else app.board.sync(new GameSession(app, { rules, seats }).state);
     app.board.clearMarks(); app.board.setLast([]);
     // the chapter opens on its picture, which then gives way to the table
-    const banner = el(`<div class="cut plate" style="background-image:url('${ART}story/${ch.id}.webp')"><div class="chapter"><small>${esc(this.label(index))}</small><h2>${esc(ch.title)}</h2></div></div>`);
+    const banner = el(`<div class="cut chapterplate" style="background-image:url('${ART}story/${ch.id}.webp')"><div class="chapter"><small>${esc(this.label(index))}</small><h2>${esc(ch.title)}</h2></div></div>`);
     banner.addEventListener('click', () => { banner.dataset.skip = '1'; });
     app.ui.root.append(banner); app.cutLayer = banner;
     for (let t = 0; t < 4.2 && !banner.dataset.skip && alive(); t += 0.1) await app.stage.wait(0.1);

@@ -429,10 +429,12 @@ class Search {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
+/**
+ * Roughly normal noise (mean 0, deviation 1) from four uniform draws. Only + - * and sqrt are used, so the result
+ * is bit-for-bit the same on every machine and JS engine (Math.log / cos / exp are not guaranteed to be).
+ */
 function gauss(rng) {
-  let u = rng();
-  if (u < 1e-12) u = 1e-12;
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rng());
+  return (rng() + rng() + rng() + rng() - 2) * Math.sqrt(3);
 }
 
 function seedFor(state, seed) {
@@ -478,7 +480,8 @@ export function chooseMove(state, opts = {}) {
     const few = cands.slice(0, set.top).filter((c) => c.score > -MATE);
     if (few.length > 1) {
       const hi = few.reduce((a, c) => Math.max(a, c.score), -INF);
-      const w = few.map((c) => Math.exp((c.score - hi) / (set.temp * UNIT)));
+      // weight ~ exp(-x), written with exact arithmetic for the same reason as gauss()
+      const w = few.map((c) => { const x = (hi - c.score) / (set.temp * UNIT); return 1 / (1 + x + 0.5 * x * x + x * x * x / 6); });
       let r = rng() * w.reduce((a, c) => a + c, 0);
       let chosen = few[few.length - 1];
       for (let i = 0; i < few.length; i++) { r -= w[i]; if (r <= 0) { chosen = few[i]; break; } }

@@ -55,6 +55,13 @@ for (const step of steps) {
       await clickText('Skip scene'); await sleep(1500); await shot('17-matchcard');
       await clickText('Just watch'); await sleep(8000); await shot('18-story-match');
     }
+    if (step === 'problem') {
+      await ev(`app.settings.voice = 0; app.applySettings(); app.story.play(1); 0`); await sleep(1500); await shot('20-chapter-plate');
+      await sleep(5000); await clickText('Skip scene'); await sleep(6000); await shot('21-problem');
+      await clickSquare('d1'); await clickSquare('d4'); await sleep(4000); await shot('22-problem-solved');
+      console.log('after', JSON.stringify(await ev(`({mode: app.mode, captured: app.session ? app.session.state.captured : null, lines: [...document.querySelectorAll('.bubble')].map(n => n.textContent.slice(0, 80))})`)));
+      await clickText('Skip scene'); await sleep(1500); await clickText('Skip scene'); await sleep(2500); await shot('23-chapter-end');
+    }
     if (step === 'mobile') { await page.setViewport({ width: 420, height: 860, deviceScaleFactor: 2 }); await ev(`app.startGame({ rules: 'legionary', seats: [{ char: 'maximus', kind: 'human' }, { char: 'titus', kind: 'ai', level: 2 }], setting: 'atrium', quietTalk: true })`); await sleep(7000); await shot('19-mobile'); await page.setViewport({ width: 1440, height: 810 }); }
   } catch (e) { errors.push(`step ${step} threw: ${e.message}`); }
 }
