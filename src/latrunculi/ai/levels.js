@@ -30,21 +30,21 @@ export const LEVELS = [
   {
     id: 2, name: 'Miles', latin: 'Miles', english: 'Soldier',
     blurb: 'A common soldier. Takes what is offered and guards what is attacked, but walks into forks.',
-    depth: 2, timeMs: 250, blunder: 0.12, noise: 0.18, vision: 0.9,
+    depth: 1, timeMs: 250, blunder: 0.12, noise: 0.18, vision: 0.9,
     top: 4, temp: 0.9, placeTime: 1, ttBits: 14, prune: false, placeWidth: 8,
-    weights: { forked: 0, threat: 0.4, hanging: 0.5, double: 0.3 },
+    weights: { hanging: 0.3 },
   },
   {
     id: 3, name: 'Centurio', latin: 'Centurio', english: 'Centurion',
     blurb: 'A solid club player. Plans two or three moves ahead and seldom leaves a piece hanging.',
-    depth: 3, timeMs: 400, blunder: 0.05, noise: 0.12, vision: 1, shallow: 0.7,
+    depth: 3, timeMs: 400, blunder: 0.05, noise: 0.14, vision: 1, shallow: 0.3,
     top: 3, temp: 0.6, placeTime: 1, ttBits: 16, prune: true, placeWidth: 10,
-    weights: { forked: 0.3 },
+    weights: null,
   },
   {
     id: 4, name: 'Legatus', latin: 'Legatus', english: 'Legate',
     blurb: 'A legion commander. Strong and patient; rarely makes a mistake.',
-    depth: 4, timeMs: 700, blunder: 0.01, noise: 0.06, vision: 1, shallow: 0.7,
+    depth: 3, timeMs: 700, blunder: 0.02, noise: 0.06, vision: 1,
     top: 2, temp: 0.4, placeTime: 0.6, ttBits: 18, prune: true, placeWidth: 12,
     weights: null,
   },
@@ -120,5 +120,6 @@ export function resolveSettings(opts = {}, state = null) {
   return {
     level: id, personality: P ? P.id : null, depth, timeMs, noise, blunder: clamp01(blunder), vision: clamp01(vision),
     top: L.top, temp: L.temp, weights, prune: L.prune, ttBits: L.ttBits, placeWidth: L.placeWidth, shallow: L.shallow || 0,
+    ...(opts.settings || null), // tuning hook: override any resolved setting
   };
 }

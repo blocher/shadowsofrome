@@ -342,8 +342,16 @@ export class Stage {
   }
 
   _frame() {
-    const dt = Math.min(this.clock.getDelta(), 0.1);
+    const raw = this.clock.getDelta(), dt = Math.min(raw, 0.1);
     this.time += dt;
+    // watch the frame rate: two slow stretches in a row and the app is told to lighten the graphics
+    const pf = this.perf || (this.perf = { t: 0, n: 0, slow: 0, skip: false });
+    pf.t += raw; pf.n++; if (raw > 0.3 || document.visibilityState !== 'visible') pf.skip = true;
+    if (pf.t >= 2.5) {
+      const fps = pf.n / pf.t;
+      if (!pf.skip && this.time > 6) { pf.slow = fps < 22 ? pf.slow + 1 : 0; if (pf.slow >= 2 && this.onSlow) { pf.slow = 0; this.onSlow(fps); } }
+      pf.t = 0; pf.n = 0; pf.skip = false;
+    }
     for (let i = this.tweens.length - 1; i >= 0; i--) {
       const tw = this.tweens[i];
       tw.t = Math.min(1, tw.t + (dt * (this.timeScale || 1)) / tw.dur);

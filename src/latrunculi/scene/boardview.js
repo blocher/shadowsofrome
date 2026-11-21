@@ -141,6 +141,11 @@ export class BoardView {
     this.contactMat.shared = true;
   }
 
+  /** Lighter graphics: glass without refraction (the costly part on phones). */
+  setLight(on) {
+    this.mats.forEach((m, i) => { const g = GLASS[this.glass[i]]; m.transmission = on ? 0 : g.transmission; m.roughness = on ? Math.max(0.12, g.roughness) : g.roughness; m.needsUpdate = true; });
+  }
+
   _makePiece(code) {
     const side = code > 0 ? 0 : 1, dux = code === 2 || code === -2;
     const mesh = new THREE.Mesh(dux ? this.geoDux : this.geoMan, this.mats[side]);

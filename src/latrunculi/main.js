@@ -38,6 +38,11 @@ class App {
     this.dux = new Dux(this.stage);
     this.ludus = new Ludus(this); this.story = new StoryMode(this);
     this.stage.onLayout = () => { for (const a of this.actors) if (a) a.layout(); };
+    this.stage.onSlow = () => { // a struggling phone or laptop: drop to the lighter look once, and say so
+      if (this.settings.lowGraphics || this.ui.hudLayer.classList.contains('hidden')) return;
+      this.settings.lowGraphics = true; this.applySettings();
+      this.ui.toast('Switched to lighter graphics to keep things smooth. You can change this in Settings.', 6000);
+    };
     this.input.onHover = (x, y) => this.hoverCast(x, y);
     this.input.onActorClick = (x, y) => this.clickCast(x, y);
     this.applySettings();
@@ -57,6 +62,8 @@ class App {
       this.stage.renderer.setPixelRatio(s.lowGraphics ? 1 : Math.min(window.devicePixelRatio || 1, 2));
       this.stage.bloom.enabled = !s.lowGraphics;
       this.stage.renderer.shadowMap.enabled = !s.lowGraphics;
+      this.stage.dust.visible = !s.lowGraphics;
+      if (this.board) this.board.setLight(!!s.lowGraphics);
       this.stage.resize();
     }
     this.persist();
@@ -72,6 +79,7 @@ class App {
       if (this.board) this.board.dispose();
       st.setBoardSize(rules.cols, rules.rows);
       this.board = new BoardView(st, rules.cols, rules.rows, glass, this.marble);
+      this.board.setLight(!!this.settings.lowGraphics);
       this.boardKey = key;
       this.input.setBoard(this.board);
     }

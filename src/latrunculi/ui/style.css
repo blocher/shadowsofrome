@@ -5,7 +5,7 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: #0b0705; overflow: hidden; overscroll-behavior: none; color: var(--ink); font-family: var(--serif); font-size: 18px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
-body { --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+body { --st: env(safe-area-inset-top, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px); -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; touch-action: manipulation; }
 /* the stage and the interface fill the visible viewport (dvh follows the phone's address bar) */
 #stage { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; display: block; touch-action: none; outline: none; }
 #ui { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; pointer-events: none; overflow: hidden; -webkit-user-select: none; user-select: none; }
