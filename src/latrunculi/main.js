@@ -36,6 +36,7 @@ class App {
     this.ui = new UI(this);
     this.director = new Director(this);
     this.dux = new Dux(this.stage);
+    this.ludus = new Ludus(this); this.story = new StoryMode(this);
     this.stage.onLayout = () => { for (const a of this.actors) if (a) a.layout(); };
     this.input.onHover = (x, y) => this.hoverCast(x, y);
     this.input.onActorClick = (x, y) => this.clickCast(x, y);
@@ -165,8 +166,8 @@ class App {
     this.ui.title();
   }
 
-  openLudus() { this.clearTable(); this.ui.showHud(false); this.ludus = this.ludus || new Ludus(this); this.ludus.menu(); }
-  openStory() { this.clearTable(); this.ui.showHud(false); this.story = this.story || new StoryMode(this); this.story.menu(); }
+  openLudus() { this.clearTable(); this.ui.showHud(false); this.ludus.menu(); }
+  openStory() { this.clearTable(); this.ui.showHud(false); this.story.menu(); }
 }
 
 const app = new App();

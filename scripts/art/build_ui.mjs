@@ -18,7 +18,7 @@ const LM = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/art/landmarks.jso
 const svg = (s) => Buffer.from(s);
 
 // ── hero ──
-await sharp(raw('ui_hero_c')).resize(2560, 1440, { fit: 'cover', kernel: 'lanczos3' }).webp({ quality: 86, effort: 5 }).toFile(path.join(ui, 'hero.webp'));
+await sharp(raw('ui_hero_c')).resize(2560, 1440, { fit: 'cover', kernel: 'lanczos3' }).webp({ quality: 90, effort: 5 }).toFile(path.join(ui, 'hero.webp'));
 
 // ── cards ──
 const CW = 768, CH = 1024;

@@ -19,7 +19,15 @@ export class Director {
   _tick(dt, time) {
     const lvl = this.speaking ? this.app.voice.level() : 0;
     for (const a of this.actors) if (a) { a.setTalking(this.speaking && this.speaking.actor === a ? lvl : 0); a.update(dt, time); }
-    if (this.dux) this.dux.update(dt, time);
+    if (this.dux) {
+      this.dux.update(dt, time);
+      // left to himself, Dux fidgets: a nut, a nap, a bit of scolding
+      this.duxIdle = (this.duxIdle ?? 9) - dt;
+      if (this.duxIdle <= 0) {
+        this.duxIdle = 8 + Math.random() * 10;
+        if (this.dux.ready && !this.dux.moving && this.dux.pose === 'sit' && this.dux.onGround) this.dux.setPose(['eat', 'eat', 'chatter', 'sleep', 'scared'][Math.floor(Math.random() * 5)], 2.5 + Math.random() * 3);
+      }
+    }
   }
 
   pick(pool, key) {
@@ -80,7 +88,8 @@ export class Director {
     const st = this.app.stage, far = -(board.cols / 2 + 1.2);
     const world = (v) => () => st.toOverlay(v);
     this.duxAnchors = {
-      home: world(new THREE.Vector3(0.4, 0, far)),
+      // Dux keeps to the far corner of the table on his master's side (Titus'), or the right if Titus is not playing
+      home: world(new THREE.Vector3((this.seatOf('titus') === 0 ? -1 : 1) * (board.rows / 2 + 1.0), 0, far - 0.2)),
       left: world(new THREE.Vector3(-(board.rows / 2 + 2.2), 0, far + 0.6)),
       right: world(new THREE.Vector3(board.rows / 2 + 2.2, 0, far + 0.6)),
       tray0: world(board.trayPosition(0).add(new THREE.Vector3(1.1, 0, -0.2))),

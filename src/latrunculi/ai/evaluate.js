@@ -35,8 +35,9 @@ export const DEFAULT_WEIGHTS = {
   block: 0.05,       // a 2x2 block of friendly pieces
   exposed: 0.02,     // per piece, per line on which it can be flanked (no friend or wall on either side)
   sandwich: 0.1,     // per piece, per line on which it already stands between two enemies (one retreat-and-return traps it)
+  surrounded: 0.1,   // per enemy neighbour beyond (friendly neighbours + 1): a piece alone among enemies
   isolated: 0.03,    // a piece with no orthogonal friend
-  corner: 0.15,      // a piece standing in a corner when rules.cornerCapture
+  corner: 0.15,      // a piece standing in a corner when rules.cornerCapture (unless friends hold both squares beside it)
   mobility: 0.02,    // per free neighbouring square of a piece that can move
   stuck: 0.4,        // per missing move below four, when a blocked player loses
   advance: 0.02,     // per rank advanced (fixed-rows setups only)
@@ -44,6 +45,7 @@ export const DEFAULT_WEIGHTS = {
   duxFree: 1,        // scales the uncapturable dux's free-neighbour table (steep at 1 and 0)
   duxDanger: 1,      // dux with one free square that an enemy can reach
   quiet: 1.2,        // progress to the quiet limit: the side ahead on count wants it, the side behind does not
+  fade: 0.9,         // share of the positional score that has evaporated when the quiet limit is reached
   simplify: 0.3,     // the side ahead on count prefers fewer pieces on the board
   placeThreat: 0.5,  // placement phase: a piece that could be trapped at once when movement begins
   placePair: 1,      // placement phase: extra multiplier share for pairs (pairs count 1 + placePair times)
@@ -252,7 +254,7 @@ export function placeScore(s, sq) {
     if (cc >= 0 && cc < cols && rr >= 0 && rr < rows && b[rr * cols + cc] * me > 0) sc += 3;
   }
   const edgeC = c === 0 || c === cols - 1, edgeR = r === 0 || r === rows - 1;
-  if (edgeC && edgeR) sc -= s.rules.cornerCapture ? 25 : 6;
+  if (edgeC && edgeR) sc += own === 2 ? 8 : s.rules.cornerCapture ? -25 : -6; // a corner between two friends is safe
   else if (edgeC || edgeR) sc += 2; // an edge piece can only be flanked along the edge
   sc += (cols + rows - 2 - Math.abs(2 * c - (cols - 1)) - Math.abs(2 * r - (rows - 1))) * 0.5;
   return sc;
@@ -272,6 +274,7 @@ function gather(s, W) {
   const nb = g.nb, b = s.board, cap = s.capA, capB = s.capB, n = g.n, ep = SCAN.ep;
   const safeDux = R.dux === 'immobilise', cornerRule = R.cornerCapture;
   const cx = cols - 1, cy = rows - 1, half = cx + cy, advCap = (rows >> 1) + 1;
+  const SURR = W.sandwich > 0 ? W.surrounded / W.sandwich : 0; // folded into the sandwich total
   let matW = 0, matB = 0, cntW = 0, cntB = 0, pairsW = 0, pairsB = 0, blocksW = 0, blocksB = 0, expW = 0, expB = 0;
   let isoW = 0, isoB = 0, mobW = 0, mobB = 0, advW = 0, advB = 0, cenW = 0, cenB = 0, cornW = 0, cornB = 0;
   let duxW = 0, duxB = 0, boundW = 0, boundB = 0, sandW = 0, sandB = 0;
@@ -305,7 +308,11 @@ function gather(s, W) {
     const cen = half - Math.abs(2 * c - cx) - Math.abs(2 * r - cy);
     const prog = white ? r : rows - 1 - r;
     const adv = prog < advCap ? prog : advCap;
-    const corn = cornerRule && (c === 0 || c === cx) && (r === 0 || r === cy) ? 1 : 0;
+    // A corner piece is only at risk while a square beside it is not held by a friend (walls count as OFF).
+    const corn = cornerRule && (c === 0 || c === cx) && (r === 0 || r === cy) && !((fe || ve === OFF) && (fw || vw === OFF) && (fn || vn === OFF) && (fs || vs === OFF)) ? 1 : 0;
+    const foes = (ve < 0 ? 1 : 0) + (vw < 0 ? 1 : 0) + (vn < 0 ? 1 : 0) + (vs < 0 ? 1 : 0);
+    const pals = (fe ? 1 : 0) + (fw ? 1 : 0) + (fn ? 1 : 0) + (fs ? 1 : 0);
+    const surr = !(isDux && safeDux) && foes - pals > 1 ? foes - pals - 1 : 0;
     let dux = 0;
     if (isDux && safeDux) {
       let free = 0, enemy = 0, freeSq = -1;
@@ -319,10 +326,10 @@ function gather(s, W) {
     }
     if (white) {
       cntW++; matW += val; pairsW += pairs; blocksW += blocks; expW += expo; if (iso) isoW++; mobW += mob;
-      advW += adv; cenW += cen; cornW += corn; duxW += dux; sandW += sand;
+      advW += adv; cenW += cen; cornW += corn; duxW += dux; sandW += sand + surr * SURR;
     } else {
       cntB++; matB += val; pairsB += pairs; blocksB += blocks; expB += expo; if (iso) isoB++; mobB += mob;
-      advB += adv; cenB += cen; cornB += corn; duxB += dux; sandB += sand;
+      advB += adv; cenB += cen; cornB += corn; duxB += dux; sandB += sand + surr * SURR;
     }
   }
   F.matW = matW; F.matB = matB; F.cntW = cntW; F.cntB = cntB; F.pairsW = pairsW; F.pairsB = pairsB;
@@ -343,8 +350,9 @@ export function evaluate(s, W = DEFAULT_WEIGHTS) {
   const R = s.rules, placing = s.phase === 'place';
   scanBoth(s);
   gather(s, W);
-  let sc = W.material * (F.matW - F.matB);
-  sc += W.pair * (placing ? 1 + W.placePair : 1) * (F.pairsW - F.pairsB);
+  // Material first, then everything positional (which fades as the quiet limit nears: only the count will matter).
+  const mat = W.material * (F.matW - F.matB);
+  let sc = W.pair * (placing ? 1 + W.placePair : 1) * (F.pairsW - F.pairsB);
   sc += W.block * (F.blocksW - F.blocksB);
   sc -= W.exposed * (F.expW - F.expB);
   sc -= W.sandwich * (placing ? 2 : 1) * (F.sandW - F.sandB);
@@ -353,7 +361,6 @@ export function evaluate(s, W = DEFAULT_WEIGHTS) {
   if (R.setup === 'rows') sc += W.advance * (F.advW - F.advB);
   sc += W.centre * 0.5 * (F.cenW - F.cenB);
   sc -= W.corner * (F.cornW - F.cornB);
-  sc += F.duxW - F.duxB;
   // fork potential
   sc += W.pressure * (SCAN.prB - SCAN.prW) + W.double * (SCAN.dbW - SCAN.dbB);
   if (placing) {
@@ -361,32 +368,32 @@ export function evaluate(s, W = DEFAULT_WEIGHTS) {
     const first = R.first;
     const penW = SCAN.epW * W.placeThreat * (first === 1 ? 0.6 : 1);
     const penB = SCAN.epB * W.placeThreat * (first === -1 ? 0.6 : 1);
-    sc += penB - penW;
-  } else {
-    if (R.noMoves === 'lose') {
-      if (F.mobW < 4) sc -= W.stuck * (4 - F.mobW);
-      if (F.mobB < 4) sc += W.stuck * (4 - F.mobB);
-    }
-    // pieces that can be trapped in one move
-    const t = s.turn;
-    const mine = t > 0 ? SCAN.epW : SCAN.epB, theirs = t > 0 ? SCAN.epB : SCAN.epW;
-    let ts = 0;
-    if (mine > 0) ts -= W.threat + W.forked * (mine - 1);
-    if (theirs > 0) ts += W.hanging + W.hangingMore * (theirs - 1);
-    sc += t * ts;
-    const diff = F.cntW - F.cntB;
-    if (diff !== 0) {
-      const sign = diff > 0 ? 1 : -1;
-      if (R.quietLimit > 0) {
-        const p = s.quiet / R.quietLimit;
-        sc += sign * W.quiet * p * p;
-      }
-      const start = 2 * (R.men + (R.dux === 'none' ? 0 : 1));
-      sc += sign * W.simplify * (1 - (F.cntW + F.cntB) / start);
-    } else if (W.pov !== 0 && W.keepPieces !== 0) {
-      sc += W.pov * W.keepPieces * (F.cntW + F.cntB);
-    }
-    if (W.pov !== 0 && W.tension !== 0) sc += W.pov * W.tension * (SCAN.prW + SCAN.prB);
+    return mat + sc + penB - penW + F.duxW - F.duxB;
+  }
+  const diff = F.cntW - F.cntB;
+  if (diff === 0 && W.pov !== 0 && W.keepPieces !== 0) sc += W.pov * W.keepPieces * (F.cntW + F.cntB);
+  if (W.pov !== 0 && W.tension !== 0) sc += W.pov * W.tension * (SCAN.prW + SCAN.prB);
+  let p2 = 0;
+  if (R.quietLimit > 0) { const p = s.quiet / R.quietLimit; p2 = p * p; sc *= 1 - W.fade * p2; }
+
+  // Tactical and decisive terms do not fade.
+  sc += mat + F.duxW - F.duxB;
+  if (R.noMoves === 'lose') {
+    if (F.mobW < 4) sc -= W.stuck * (4 - F.mobW);
+    if (F.mobB < 4) sc += W.stuck * (4 - F.mobB);
+  }
+  // pieces that can be trapped in one move
+  const t = s.turn;
+  const mine = t > 0 ? SCAN.epW : SCAN.epB, theirs = t > 0 ? SCAN.epB : SCAN.epW;
+  let ts = 0;
+  if (mine > 0) ts -= W.threat + W.forked * (mine - 1);
+  if (theirs > 0) ts += W.hanging + W.hangingMore * (theirs - 1);
+  sc += t * ts;
+  if (diff !== 0) {
+    const sign = diff > 0 ? 1 : -1;
+    sc += sign * W.quiet * p2;
+    const start = 2 * (R.men + (R.dux === 'none' ? 0 : 1));
+    sc += sign * W.simplify * (1 - (F.cntW + F.cntB) / start);
   }
   return sc;
 }

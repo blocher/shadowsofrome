@@ -4,7 +4,7 @@ import { PRESETS } from '../engine/rules.js';
 import { LEVELS } from '../ai/levels.js';
 import { GameSession } from './session.js';
 import { STORY_PROBLEMS } from './problems.js';
-import { el, esc } from '../ui/ui.js';
+import { el, esc, ART } from '../ui/ui.js';
 
 const NUM = ['Prologue', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
@@ -92,9 +92,13 @@ export class StoryMode {
     if (!alive()) return;
     if (startState) app.board.sync(startState); else app.board.sync(new GameSession(app, { rules, seats }).state);
     app.board.clearMarks(); app.board.setLast([]);
-    const banner = el(`<div class="cut" style="pointer-events:none"><div class="chapter"><small>${esc(this.label(index))}</small><h2>${esc(ch.title)}</h2></div></div>`);
+    // the chapter opens on its picture, which then gives way to the table
+    const banner = el(`<div class="cut plate" style="background-image:url('${ART}story/${ch.id}.webp')"><div class="chapter"><small>${esc(this.label(index))}</small><h2>${esc(ch.title)}</h2></div></div>`);
+    banner.addEventListener('click', () => { banner.dataset.skip = '1'; });
     app.ui.root.append(banner); app.cutLayer = banner;
-    await app.stage.wait(2.4);
+    for (let t = 0; t < 4.2 && !banner.dataset.skip && alive(); t += 0.1) await app.stage.wait(0.1);
+    banner.classList.add('out');
+    await app.stage.wait(0.9);
     banner.remove(); if (app.cutLayer === banner) app.cutLayer = null;
     if (!alive()) return;
     if (!(await this.scene(ch.intro, alive))) return;

@@ -19,28 +19,28 @@ export const LEVELS = [
   {
     id: 1, name: 'Tiro', latin: 'Tiro', english: 'Recruit',
     blurb: 'A raw recruit. Looks one move ahead and often fails to notice that a piece can be taken.',
-    depth: 1, timeMs: 150, blunder: 0.2, noise: 0.4, vision: 0.4,
+    depth: 1, timeMs: 150, blunder: 0.2, noise: 0.22, vision: 0.4,
     top: 4, temp: 1.1, placeTime: 1, ttBits: 12, prune: false, placeWidth: 8,
     weights: { hanging: 0, forked: 0.5, pressure: 0.5, double: 0.5 },
   },
   {
     id: 2, name: 'Miles', latin: 'Miles', english: 'Soldier',
     blurb: 'A common soldier. Takes what is offered and guards what is attacked, but walks into forks.',
-    depth: 2, timeMs: 250, blunder: 0.12, noise: 0.28, vision: 0.9,
+    depth: 2, timeMs: 250, blunder: 0.12, noise: 0.18, vision: 0.9,
     top: 4, temp: 0.9, placeTime: 1, ttBits: 14, prune: false, placeWidth: 8,
     weights: { forked: 0, threat: 0.4, hanging: 0.5, double: 0.3 },
   },
   {
     id: 3, name: 'Centurio', latin: 'Centurio', english: 'Centurion',
     blurb: 'A solid club player. Plans two or three moves ahead and seldom leaves a piece hanging.',
-    depth: 3, timeMs: 500, blunder: 0.05, noise: 0.16, vision: 1,
+    depth: 3, timeMs: 500, blunder: 0.05, noise: 0.12, vision: 1, shallow: 0.3,
     top: 3, temp: 0.6, placeTime: 1, ttBits: 16, prune: true, placeWidth: 10,
     weights: null,
   },
   {
     id: 4, name: 'Legatus', latin: 'Legatus', english: 'Legate',
     blurb: 'A legion commander. Strong and patient; rarely makes a mistake.',
-    depth: 5, timeMs: 700, blunder: 0.01, noise: 0.05, vision: 1,
+    depth: 4, timeMs: 700, blunder: 0.01, noise: 0.06, vision: 1,
     top: 2, temp: 0.4, placeTime: 0.6, ttBits: 18, prune: true, placeWidth: 12,
     weights: null,
   },
@@ -57,8 +57,8 @@ export const PERSONALITIES = {
   maximus: {
     id: 'maximus', name: 'Maximus',
     style: 'Sharp tactician: hunts forks and attacks, gives up material for tempo, overextends at low levels.',
-    mul: { pressure: 2.4, double: 2.2, hanging: 1.5, threat: 1.3, forked: 1.15, pair: 0.6, block: 0.5, exposed: 0.5, isolated: 0.4, advance: 2, centre: 1.6, material: 0.95 },
-    add: null,
+    mul: { pressure: 2.4, double: 2.2, hanging: 1.5, threat: 1.2, forked: 1.1, pair: 0.6, block: 0.5, exposed: 0.6, isolated: 0.5, advance: 2, centre: 1.6, material: 0.96 },
+    add: { tension: 0.05 },
     // Levels 1-2: single pieces run ahead of the line.
     low: { maxLevel: 2, mul: { exposed: 0, isolated: 0, advance: 2, pair: 0.5 } },
     rattle: null, endgame: null,
@@ -66,7 +66,7 @@ export const PERSONALITIES = {
   titus: {
     id: 'titus', name: 'Titus',
     style: 'Experienced and cautious: keeps his pieces paired, avoids even trades, and plays worse when rattled.',
-    mul: { pair: 1.8, block: 1.8, exposed: 1.7, isolated: 1.6, pressure: 0.7, advance: 0.7, corner: 1.3 },
+    mul: { pair: 1.8, block: 1.8, exposed: 1.6, isolated: 1.6, sandwich: 1.3, pressure: 0.85, advance: 0.7, corner: 1.3 },
     add: { keepPieces: 0.02 },
     low: null,
     // `rattled` (0..1, set by the game after he loses pieces) is multiplied by these per-level amounts.
@@ -76,7 +76,7 @@ export const PERSONALITIES = {
   aghiles: {
     id: 'aghiles', name: 'Aghiles',
     style: 'Patient hunter: a solid phalanx, squeezes the opponent’s mobility, waits, and is at his best in the endgame.',
-    mul: { pair: 1.3, block: 1.4, mobility: 3, stuck: 1.6, advance: 0.5, quiet: 1.4, simplify: 2, threat: 1.1 },
+    mul: { pair: 1.3, block: 1.4, mobility: 2.2, stuck: 1.6, advance: 0.5, quiet: 1.4, simplify: 2 },
     add: null,
     low: null, rattle: null,
     // With few pieces left he calculates a little further and more steadily (levels below Imperator).
@@ -115,6 +115,6 @@ export function resolveSettings(opts = {}, state = null) {
   const timeMs = opts.timeMs ?? Math.round(L.timeMs * (placing ? L.placeTime : 1));
   return {
     level: id, personality: P ? P.id : null, depth, timeMs, noise, blunder: clamp01(blunder), vision: clamp01(vision),
-    top: L.top, temp: L.temp, weights, prune: L.prune, ttBits: L.ttBits, placeWidth: L.placeWidth,
+    top: L.top, temp: L.temp, weights, prune: L.prune, ttBits: L.ttBits, placeWidth: L.placeWidth, shallow: L.shallow || 0,
   };
 }

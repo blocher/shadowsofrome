@@ -6,29 +6,27 @@
   ],
   "scaleHint": 1.18,
   "hiddenBelow": 0.85,
-  "landmarks": {
-    "eyeL": [
-      0.545,
-      0.261
-    ],
-    "eyeR": [
-      0.631,
-      0.274
-    ],
-    "mouth": [
-      0.585,
-      0.363
-    ],
-    "headTop": [
-      0.514,
-      0.087
-    ],
-    "chin": [
-      0.562,
-      0.408
-    ]
-  },
-  "note": "Landmarks are normalised [x,y] on the neutral frame; eyeL/eyeR are the left/right eye as seen in the image. talk, blink and look are neutral plus a feathered patch (pixel-identical elsewhere): draw them as overlays or hard swaps. The other expressions are full re-renders aligned by translation: crossfade them (150-250 ms).",
+  "eyeL": [
+    0.545,
+    0.261
+  ],
+  "eyeR": [
+    0.631,
+    0.274
+  ],
+  "mouth": [
+    0.585,
+    0.363
+  ],
+  "headTop": [
+    0.514,
+    0.087
+  ],
+  "chin": [
+    0.562,
+    0.408
+  ],
+  "note": "eyeL, eyeR, mouth, headTop and chin are normalised [x,y] on the neutral frame; eyeL/eyeR are the left/right eye as seen in the image. talk, blink and look are neutral plus a feathered patch (pixel-identical elsewhere): draw them as overlays or hard swaps. The other expressions are full re-renders aligned by translation: crossfade them (150-250 ms).",
   "frames": [
     "neutral",
     "talk",
@@ -40,6 +38,7 @@
     "sulking",
     "look"
   ],
+  "registrationNote": "offsetPx = whole-frame shift that was applied to put the edit back on neutral (canvas px; 0 means the model kept the framing). headShiftPx = extra shift of the head alone that the patch follows. residual / seam = remaining RMS / mean difference (0-255) outside the changed feature. changedRect = [x,y,w,h] of the pixels that differ from neutral.",
   "registration": {
     "talk": {
       "mode": "patch",

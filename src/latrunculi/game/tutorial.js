@@ -36,15 +36,6 @@ export class Ludus {
     return app.epoch === epoch;
   }
 
-  skipLayer() {
-    const app = this.app;
-    const layer = el('<div class="cut" style="pointer-events:none"><div class="next">Click a speech bubble’s speaker, or press space, to move on</div></div>');
-    const skip = (e) => { if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Enter') return; app.voice.stop(); };
-    window.addEventListener('keydown', skip);
-    layer.cleanup = () => window.removeEventListener('keydown', skip);
-    return layer;
-  }
-
   async lesson(id) {
     const app = this.app, lesson = LESSONS.find((l) => l.id === id), T = app.tutorialLines[id] || { title: id, intro: [], steps: [], wrap: [] };
     app.clearTable();

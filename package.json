@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "voices": "node scripts/voices.mjs",
-    "art": "node scripts/art.mjs"
+    "art": "node scripts/art/build_all.mjs",
+    "voices:audition": "node scripts/voices.mjs --audition"
   },
   "dependencies": {
     "three": "^0.170.0"

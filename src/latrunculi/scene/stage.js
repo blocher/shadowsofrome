@@ -270,7 +270,7 @@ export class Stage {
     const d = hi / v.zoom;
     cam.position.copy(dir).multiplyScalar(d); cam.lookAt(0, 0, 0);
     const w = this.width, h = this.height;
-    cam.setViewOffset(w, h, 0, cy * h / 2, w, h);
+    cam.setViewOffset(w, h, -(this.shiftX || 0) * w / 2, cy * h / 2, w, h); // shiftX slides the board aside to make room for a panel
     cam.updateProjectionMatrix(); cam.updateMatrixWorld();
     if (snap) this.viewGoal = { ...v };
     this.onLayout && this.onLayout();

@@ -25,6 +25,7 @@ export class ReviewPanel {
   async open() {
     const app = this.app;
     app.ui.showHud(false);
+    if (app.stage.aspect >= 1.2) { app.stage.shiftX = -0.2; app.stage.fitCamera(); if (app.actors[1]) app.actors[1].mesh.visible = false; }
     const p = this.panel = el(`<div class="review panel">
       <h2>The game, move by move <button class="btn ghost small" data-a="close">Close</button></h2>
       <div class="progress"><i></i></div>
@@ -65,6 +66,7 @@ export class ReviewPanel {
     window.removeEventListener('keydown', this.keys);
     this.app.ai.cancel();
     this.panel.remove();
+    this.app.stage.shiftX = 0; this.app.stage.fitCamera(); if (this.app.actors[1] && this.app.actors[1].ready) this.app.actors[1].mesh.visible = true;
     this.app.board.clearMarks();
     if (!silent && this.onClose) this.onClose();
   }

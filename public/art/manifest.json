@@ -1,7 +1,7 @@
 {
   "generated": "2026-11-21",
   "base": "public/art/",
-  "totalBytes": 24069389,
+  "totalBytes": 24182173,
   "files": [
     {
       "path": "backgrounds/atrium.webp",
@@ -61,7 +61,7 @@
     },
     {
       "path": "characters/aghiles/meta.json",
-      "bytes": 3023
+      "bytes": 3359
     },
     {
       "path": "characters/aghiles/neutral.webp",
@@ -128,7 +128,7 @@
     },
     {
       "path": "characters/maximus/meta.json",
-      "bytes": 3018
+      "bytes": 3354
     },
     {
       "path": "characters/maximus/neutral.webp",
@@ -195,7 +195,7 @@
     },
     {
       "path": "characters/titus/meta.json",
-      "bytes": 3027
+      "bytes": 3363
     },
     {
       "path": "characters/titus/neutral.webp",
@@ -248,7 +248,7 @@
     },
     {
       "path": "contact_sheet.jpg",
-      "bytes": 793591,
+      "bytes": 793691,
       "width": 2400,
       "height": 3500,
       "alpha": false
@@ -482,7 +482,7 @@
     },
     {
       "path": "ui/hero.webp",
-      "bytes": 261138,
+      "bytes": 372814,
       "width": 2560,
       "height": 1440,
       "alpha": false

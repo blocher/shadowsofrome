@@ -456,6 +456,9 @@ export function chooseMove(state, opts = {}) {
   }
   // A lapse (decided up front): pick among the top few candidates, weighted by how good they look.
   const lapse = set.blunder > 0 && rng() < set.blunder;
+  // Some levels do not always think as far as they can.
+  let depth = opts.depth ?? set.depth;
+  if (set.shallow > 0 && opts.depth === undefined && rng() < set.shallow && depth > 1) depth--;
   // Evaluation noise: one draw per candidate move, fixed for the whole decision (plus a tiny tie-break jitter).
   const sigma = set.noise * UNIT;
   const bias = () => Math.round(gauss(rng) * sigma + (rng() - 0.5) * 20);
@@ -463,7 +466,7 @@ export function chooseMove(state, opts = {}) {
     weights, prune: set.prune, watch, placeWidth: set.placeWidth, ttBits: set.ttBits,
     timeMs: set.timeMs, maxNodes: opts.maxNodes, history: opts.history,
   });
-  const res = search.run({ maxDepth: opts.depth ?? set.depth, multi: lapse ? set.top : 1, quickSingle: true, bias });
+  const res = search.run({ maxDepth: depth, multi: lapse ? set.top : 1, quickSingle: true, bias });
   if (res.moves.length === 0) return none;
 
   const cands = res.moves.filter((m) => m.exact);
