@@ -25,7 +25,7 @@ const audit = async (name) => {
       const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) continue;
       const r = n.getBoundingClientRect(); if (r.width < 2 || r.height < 2) continue;
       const label = `${n.tagName.toLowerCase()}.${String(n.className).split(' ').slice(0, 2).join('.')} "${(n.textContent || '').trim().slice(0, 24)}"`;
-      const scroller = n.closest('.setup-box, .list-box, .card, .moves, .screen');
+      const scroller = n.closest('.setup-box, .list-box, .card, .moves, .screen, .review');
       if (!scroller && (r.right > W + 1 || r.left < -1)) out.push(`sideways ${Math.round(r.left)}..${Math.round(r.right)}: ${label}`);
       if (scroller && scroller.scrollWidth > scroller.clientWidth + 1 && n === scroller) out.push(`scroller scrolls sideways (${scroller.scrollWidth} > ${scroller.clientWidth}): ${label}`);
       if (n.matches('button, .btn, select, input') && !scroller && (r.bottom > H + 1 || r.top < -1)) out.push(`control off screen vertically ${Math.round(r.top)}..${Math.round(r.bottom)}: ${label}`);

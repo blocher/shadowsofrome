@@ -298,6 +298,14 @@ input.text:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
   .cut .chapter h2 { font-size: min(9vw, 2.6rem); padding: 0 4vw; }
 }
 
+/* ---- small upright phones: the review sheet keeps its controls in view ---- */
+@media (max-aspect-ratio: 1/1) and (max-height: 700px) {
+  .review { height: 60dvh; padding: 0.45rem 0.6rem; gap: 0.25rem; }
+  .review h2 { font-size: 0.95rem; } .review canvas { height: 46px; } .review .acc { display: none; }
+  .review .moves { min-height: 34px; flex: 1 1 34px; } .review .note { font-size: 0.82rem; padding: 0.25rem 0.5rem; max-height: 3.6em; overflow: hidden; }
+  .stepper .btn { min-height: 36px; } .stepper { gap: 0.25rem; }
+}
+
 /* ---- phones held sideways, and other short windows ---- */
 @media (max-height: 520px) and (min-aspect-ratio: 1/1) {
   html, body { font-size: 12.5px; }
